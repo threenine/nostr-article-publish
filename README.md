@@ -1,4 +1,4 @@
-# Obsidian Sample Plugin
+# Publish Articles to Nostr from Obsidian
 
 This is a sample plugin for Obsidian (https://obsidian.md).
 

@@ -1,11 +1,14 @@
 {
-	"id": "sample-plugin",
-	"name": "Sample Plugin",
+	"id": "publish-article-nostr",
+	"name": "Nostr Article Publisher",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false
+	"description": "Publish long form articles to nostr",
+	"author": "threenine",
+	"authorUrl": "https://threenine.co.uk",
+	"fundingUrl": {
+		"Buy Me a coffee" : "buymeacoffee.com/XBhTJcRiC",
+		"Github Sponsors" : "https://github.com/sponsors/threenine"
+	},
+	"isDesktopOnly": true
 }
