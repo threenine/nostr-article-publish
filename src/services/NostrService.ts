@@ -4,9 +4,6 @@ import {NostrPublishConfiguration} from "../types";
 import {Relay, SimplePool} from "nostr-tools";
 import {DEFAULT_EXPLICIT_RELAY_URLS, toHex, validateURL} from "../utilities";
 
-
-
-
 export default class NostrService {
 	private privateKey: string;
 	private plugin: NostrArticlePublishPlugin;

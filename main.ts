@@ -2,6 +2,7 @@ import { App, Editor, MarkdownView, Modal, Notice, Plugin } from 'obsidian';
 import {NostrPublishConfigurationTab} from './src/config/NostrPublishConfigurationTab';
 import {NostrPublishConfiguration} from './src/types';
 import NostrService from "./src/services/NostrService";
+import {DEFAULT_EXPLICIT_RELAY_URLS} from "./src/utilities";
 
 export default class NostrArticlePublishPlugin extends Plugin {
 	configuration : NostrPublishConfiguration
@@ -10,6 +11,9 @@ export default class NostrArticlePublishPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
         this.startService();
+		// This adds a settings tab so the user can configure various aspects of the plugin
+		this.addSettingTab(new NostrPublishConfigurationTab(this.app, this));
+
 
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('newspaper', 'Publish to Nostr', (evt: MouseEvent) => {
@@ -60,8 +64,7 @@ export default class NostrArticlePublishPlugin extends Plugin {
 			}
 		});
 
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new NostrPublishConfigurationTab(this.app, this));
+
 
 		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
 		// Using this function will automatically remove the event listener when this plugin is disabled.
@@ -81,7 +84,9 @@ export default class NostrArticlePublishPlugin extends Plugin {
 	}
 	async loadSettings() {
 		this.configuration = Object.assign({}, {
-			privateKey: ""
+			privateKey: "",
+			relayConfigurationEnabled: false,
+			relayURLs: DEFAULT_EXPLICIT_RELAY_URLS
 		}, await this.loadData());
 	}
 

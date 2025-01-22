@@ -1,16 +1,16 @@
-import {App, Notice, PluginSettingTab, Setting, TextComponent} from "obsidian";
+import {App, ButtonComponent, Notice, PluginSettingTab, Setting, TextComponent} from "obsidian";
 import NostrArticlePublishPlugin from "../../main";
 import {validatePrivateKey, validateURL} from "../utilities";
 
 export class NostrPublishConfigurationTab extends PluginSettingTab {
 	plugin: NostrArticlePublishPlugin;
-	private displayRefresh: () => void;
+	private refresh: () => void;
 	private relayUrlInput: TextComponent;
 
 	constructor(app: App, plugin: NostrArticlePublishPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
-		this.displayRefresh = () => this.display();
+		this.refresh = () => this.display();
 	}
 
 	display(): void {
@@ -19,14 +19,13 @@ export class NostrPublishConfigurationTab extends PluginSettingTab {
 		containerEl.empty();
 
 		let privateKeyField: HTMLInputElement;
-		let privateKeyInput: any;
 
 		// Private Key
 		new Setting(containerEl)
 			.setName('Nostr Private key')
 			.setDesc("Your publishing nostr private key")
-			.addText((text) => {
-				privateKeyInput = text;
+			.addText((text: TextComponent) => {
+
 				text.setPlaceholder('nsec1..............')
 				.setValue(this.plugin.configuration.privateKey)
 				.onChange(async (value) => {
@@ -64,33 +63,31 @@ export class NostrPublishConfigurationTab extends PluginSettingTab {
 			.setDesc("Edit relay configuration to refresh connection to relays")
 			.addToggle((toggle) =>
 				toggle
-					.setValue(this.plugin.configuration.relayConfigEnabled)
+					.setValue(this.plugin.configuration.relayConfigurationEnabled)
 					.onChange(async (value) => {
-						this.plugin.configuration.relayConfigEnabled = value;
+						this.plugin.configuration.relayConfigurationEnabled = value;
 						await this.plugin.saveConfiguration();
-						this.displayRefresh();
+						this.refresh();
 					})
 			);
 		// end configure relays
 		// Manage Relays
 		new Setting(containerEl)
 			.setName("Reconnect to relays ")
-			.setDesc(
-				"Refresh connection to relays - check status bar for details."
-			)
-			.addButton((btn) => {
+			.setDesc("Refresh connection to relays - check status bar for details.")
+			.addButton((btn: ButtonComponent) => {
 				btn.setIcon("reset");
 				btn.setCta();
 				btn.setTooltip("Reconnect to relays");
 				btn.onClick(async () => {
 					new Notice(`Reconnecting to your defined relays`);
-					this.plugin.nostrService.connectToRelays();
-					this.displayRefresh();
+					await this.plugin.nostrService.connectToRelays();
+					this.refresh();
 
 				});
 			});
 
-		if (this.plugin.configuration.relayConfigEnabled) {
+		if (this.plugin.configuration.relayConfigurationEnabled) {
 			containerEl.createEl("h5", { text: "Relay Configuration" });
 
 			new Setting(this.containerEl)
@@ -118,14 +115,14 @@ export class NostrPublishConfigurationTab extends PluginSettingTab {
 									`Added ${addedRelayUrl} to relay configuration.`
 								);
 								new Notice(`Re-connecting to Nostr...`);
-								this.displayRefresh();
-								 this.plugin.nostrService.connectToRelays();
+								this.refresh();
+								await this.plugin.nostrService.connectToRelays();
 								this.relayUrlInput.setValue("");
 							} else {
 								new Notice("Invalid URL added");
 							}
 						} catch {
-							new Notice("No URL added");
+							new Notice("The relay url could not be added.");
 						}
 					});
 				});
@@ -155,7 +152,7 @@ export class NostrPublishConfigurationTab extends PluginSettingTab {
 							) {
 								this.plugin.configuration.relayURLs.splice(i, 1);
 								await this.plugin.saveConfiguration();
-								this.displayRefresh();
+								this.refresh();
 								new Notice("Relay successfully deleted.");
 								new Notice(`Re-connecting to Nostr...`);
 								await this.plugin.nostrService.connectToRelays();

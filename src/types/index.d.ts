@@ -1,6 +1,6 @@
 
 export interface NostrPublishConfiguration {
 	privateKey: string;
-	relayConfigEnabled: boolean;
+	relayConfigurationEnabled: boolean;
 	relayURLs: string[];
 }
