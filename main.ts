@@ -1,13 +1,15 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
-import {NostrPublishSettingsTab} from './src/config/NostrPublishSettingsTab';
-import {NostrPublishConfigurationSettings} from './src/types';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin } from 'obsidian';
+import {NostrPublishConfigurationTab} from './src/config/NostrPublishConfigurationTab';
+import {NostrPublishConfiguration} from './src/types';
 import NostrService from "./src/services/NostrService";
 
 export default class NostrArticlePublishPlugin extends Plugin {
-	configuration : NostrPublishConfigurationSettings
+	configuration : NostrPublishConfiguration
 	nostrService: NostrService;
+	statusBar: any;
 	async onload() {
 		await this.loadSettings();
+        this.startService();
 
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('newspaper', 'Publish to Nostr', (evt: MouseEvent) => {
@@ -59,7 +61,7 @@ export default class NostrArticlePublishPlugin extends Plugin {
 		});
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new NostrPublishSettingsTab(this.app, this));
+		this.addSettingTab(new NostrPublishConfigurationTab(this.app, this));
 
 		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
 		// Using this function will automatically remove the event listener when this plugin is disabled.
@@ -74,14 +76,16 @@ export default class NostrArticlePublishPlugin extends Plugin {
 	onunload() {
 
 	}
-
+	startService() {
+		this.nostrService = new NostrService(this, this.app, this.configuration);
+	}
 	async loadSettings() {
 		this.configuration = Object.assign({}, {
 			privateKey: ""
 		}, await this.loadData());
 	}
 
-	async saveSettings() {
+	async saveConfiguration() {
 		await this.saveData(this.configuration);
 	}
 }
@@ -100,6 +104,7 @@ class SampleModal extends Modal {
 		const {contentEl} = this;
 		contentEl.empty();
 	}
+
 }
 
 
