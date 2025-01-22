@@ -84,7 +84,7 @@ export class NostrPublishConfigurationTab extends PluginSettingTab {
 					btn.setCta();
 					btn.setTooltip("Reconnect to relays");
 					btn.onClick(async () => {
-						new Notice(`Reconnecting to your defined relays`);
+						new Notice(`Attempting to reconnect to relays...`);
 						this.refresh();
 						await this.plugin.nostrService.relaysConnect();
 					});
