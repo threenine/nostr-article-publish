@@ -2,14 +2,14 @@ import { App, Editor, MarkdownView, Modal, Notice, Plugin } from 'obsidian';
 import {NostrPublishConfigurationTab} from './src/config/NostrPublishConfigurationTab';
 import {NostrPublishConfiguration} from './src/types';
 import NostrService from "./src/services/NostrService";
-import {DEFAULT_EXPLICIT_RELAY_URLS} from "./src/utilities";
+import {DEFAULT_EXPLICIT_RELAY_URLS, setAttributes} from "./src/utilities";
 
 export default class NostrArticlePublishPlugin extends Plugin {
 	configuration : NostrPublishConfiguration
 	nostrService: NostrService;
 	statusBar: any;
 	async onload() {
-		await this.loadSettings();
+		await this.loadConfiguration();
         this.startService();
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new NostrPublishConfigurationTab(this.app, this));
@@ -82,17 +82,19 @@ export default class NostrArticlePublishPlugin extends Plugin {
 	startService() {
 		this.nostrService = new NostrService(this, this.app, this.configuration);
 	}
-	async loadSettings() {
+	async loadConfiguration() {
 		this.configuration = Object.assign({}, {
 			privateKey: "",
 			relayConfigurationEnabled: false,
-			relayURLs: DEFAULT_EXPLICIT_RELAY_URLS
+			relayURLs: DEFAULT_EXPLICIT_RELAY_URLS,
+			statusBarEnabled: true
 		}, await this.loadData());
 	}
 
 	async saveConfiguration() {
 		await this.saveData(this.configuration);
 	}
+
 }
 
 class SampleModal extends Modal {

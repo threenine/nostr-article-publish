@@ -46,5 +46,13 @@ export const DEFAULT_EXPLICIT_RELAY_URLS = [
 	'wss://relay.damus.io',
 	'wss://relay.primal.net',
 	'wss://relay.nostr.band',
-	"wss://nos.lol ",
+	'wss://nos.lol'
 ];
+
+export function setAttributes(element: any, attributes: any) {
+	for (let key in attributes) {
+		element.setAttribute(key, attributes[key]);
+	}
+}
+
+

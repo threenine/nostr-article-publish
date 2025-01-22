@@ -4,7 +4,7 @@ import {validatePrivateKey, validateURL} from "../utilities";
 
 export class NostrPublishConfigurationTab extends PluginSettingTab {
 	plugin: NostrArticlePublishPlugin;
-	private refresh: () => void;
+	private readonly refresh: () => void;
 	private relayUrlInput: TextComponent;
 
 	constructor(app: App, plugin: NostrArticlePublishPlugin) {
@@ -72,24 +72,23 @@ export class NostrPublishConfigurationTab extends PluginSettingTab {
 			);
 		// end configure relays
 		// Manage Relays
-		new Setting(containerEl)
-			.setName("Reconnect to relays ")
-			.setDesc("Refresh connection to relays - check status bar for details.")
-			.addButton((btn: ButtonComponent) => {
-				btn.setIcon("reset");
-				btn.setCta();
-				btn.setTooltip("Reconnect to relays");
-				btn.onClick(async () => {
-					new Notice(`Reconnecting to your defined relays`);
-					await this.plugin.nostrService.connectToRelays();
-					this.refresh();
 
-				});
-			});
 
 		if (this.plugin.configuration.relayConfigurationEnabled) {
 			containerEl.createEl("h5", { text: "Relay Configuration" });
-
+			new Setting(this.containerEl)
+				.setName("Reconnect to relays ")
+				.setDesc("Refresh connection to relays")
+				.addButton((btn: ButtonComponent) => {
+					btn.setIcon("reset");
+					btn.setCta();
+					btn.setTooltip("Reconnect to relays");
+					btn.onClick(async () => {
+						new Notice(`Reconnecting to your defined relays`);
+						this.refresh();
+						await this.plugin.nostrService.relaysConnect();
+					});
+				});
 			new Setting(this.containerEl)
 				.setDesc("Add a relay URL to settings")
 				.setName("Add Relay")
@@ -116,7 +115,7 @@ export class NostrPublishConfigurationTab extends PluginSettingTab {
 								);
 								new Notice(`Re-connecting to Nostr...`);
 								this.refresh();
-								await this.plugin.nostrService.connectToRelays();
+								await this.plugin.nostrService.relaysConnect();
 								this.relayUrlInput.setValue("");
 							} else {
 								new Notice("Invalid URL added");
@@ -130,7 +129,7 @@ export class NostrPublishConfigurationTab extends PluginSettingTab {
 			for (const [i, url] of this.plugin.configuration.relayURLs.entries()) {
 				new Setting(this.containerEl)
 					.setDesc(
-						`${url} is ${this.plugin.nostrService.getRelayInfo(url)
+						`${this.plugin.nostrService.getRelayInfo(url)
 							? "connected"
 							: "disconnected"
 						}`
@@ -138,8 +137,8 @@ export class NostrPublishConfigurationTab extends PluginSettingTab {
 					.setName(
 						`${this.plugin.nostrService.getRelayInfo(url)
 							? "🟢"
-							: "💀"
-						} - Relay ${i + 1} `
+							: "🔴"
+						}  ${url} `
 					)
 					.addButton((btn) => {
 						btn.setIcon("trash");
@@ -155,7 +154,7 @@ export class NostrPublishConfigurationTab extends PluginSettingTab {
 								this.refresh();
 								new Notice("Relay successfully deleted.");
 								new Notice(`Re-connecting to Nostr...`);
-								await this.plugin.nostrService.connectToRelays();
+								await this.plugin.nostrService.relaysConnect();
 							}
 						});
 					});

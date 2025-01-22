@@ -1,5 +1,5 @@
 import NostrArticlePublishPlugin from "../../main";
-import {App} from "obsidian";
+import {App, Notice} from "obsidian";
 import {NostrPublishConfiguration} from "../types";
 import {Relay, SimplePool} from "nostr-tools";
 import {DEFAULT_EXPLICIT_RELAY_URLS, toHex, validateURL} from "../utilities";
@@ -35,16 +35,15 @@ export default class NostrService {
 				}
 			}
 		}
-		this.connectToRelays().then(result => { console.log("Connected to relays")});
+		this.relaysConnect().then(result => { console.log("Connected to relays")});
 	}
 
-	 async connectToRelays(): Promise<void> {
+	 async relaysConnect(): Promise<void> {
 		this.refreshRelayUrls();
 		this.connectedRelays = [];
 
 		let connectionPromises = this.relayURLs.map((url) => {
 			return new Promise<Relay | null>(async (resolve) => {
-				console.log(`Initializing NostrService with relay: ${url}`);
 				try {
 					const relayAttempt = await Relay.connect(url);
 
@@ -53,28 +52,20 @@ export default class NostrService {
 					}
 
 					const handleFailure = () => {
-						console.log(`Disconnected from ${url}, updating status bar.`);
-						this.connectedRelays.remove(relayAttempt);
-						this.updateStatusBar();
+					    this.connectedRelays.remove(relayAttempt);
 						resolve(null);
 					};
 
-					console.log(`Connected to ${relayAttempt.url}`);
 					this.connectedRelays.push(relayAttempt);
 					resolve(relayAttempt);
 				} catch (error) {
-					console.error(`Failed to connect to ${url}: ${error}`);
 					resolve(null);
 				}
 			});
 		});
 
 		Promise.all(connectionPromises).then(() => {
-			console.log(
-				`Connected to ${this.connectedRelays.length} / ${this.relayURLs.length} relays`
-			);
-			this.updateStatusBar();
-			if (this.connectedRelays.length > 0) {
+				if (this.connectedRelays.length > 0) {
 				this.setConnectionPool();
 				this.connected = true;
 			}
@@ -88,11 +79,8 @@ export default class NostrService {
 		}
 	}
 	refreshRelayUrls(): void {
-		this.relayURLs = [];
+
 		if (!this.plugin.configuration.relayURLs || this.plugin.configuration.relayURLs.length === 0) {
-			console.error(
-				"YourPlugin requires a list of relay urls to be set in the settings, defaulting to Damus."
-			);
 			this.relayURLs = DEFAULT_EXPLICIT_RELAY_URLS;
 		} else {
 			for (let url of this.plugin.configuration.relayURLs) {
@@ -102,16 +90,7 @@ export default class NostrService {
 			}
 		}
 	}
-	protected updateStatusBar	 = () => {
-		if (this.connectedRelays.length === 0) {
-			this.plugin.statusBar?.setText("Nostr 🌚");
-			this.connected = false;
-		} else {
-			this.plugin.statusBar?.setText(
-				`Nostr 🟣 ${this.connectedRelays.length} / ${this.relayURLs.length} relays.`
-			);
-		}
-	};
+
 
 	getRelayInfo(relayUrl: string): boolean {
 		let connected: boolean = false;
