@@ -25,7 +25,6 @@ export class NostrPublishConfigurationTab extends PluginSettingTab {
 			.setName('Nostr Private key')
 			.setDesc("Your publishing nostr private key")
 			.addText((text: TextComponent) => {
-
 				text.setPlaceholder('nsec1..............')
 				.setValue(this.plugin.configuration.privateKey)
 				.onChange(async (value) => {

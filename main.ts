@@ -1,24 +1,40 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin } from 'obsidian';
-import {NostrPublishConfigurationTab} from './src/config/NostrPublishConfigurationTab';
+import {NostrPublishConfigurationTab} from './src/tabs/NostrPublishConfigurationTab';
 import {NostrPublishConfiguration} from './src/types';
 import NostrService from "./src/services/NostrService";
 import {DEFAULT_EXPLICIT_RELAY_URLS, setAttributes} from "./src/utilities";
+import PublishService from "./src/services/PublishService";
+
+import PublishModal from "./src/modals/PublishModal";
 
 export default class NostrArticlePublishPlugin extends Plugin {
 	configuration : NostrPublishConfiguration
 	nostrService: NostrService;
 	statusBar: any;
+	private publishingService : PublishService
 	async onload() {
 		await this.loadConfiguration();
         this.startService();
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new NostrPublishConfigurationTab(this.app, this));
+		this.publishingService = new PublishService(this.app, this.nostrService);
 
 
 		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('newspaper', 'Publish to Nostr', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('Published to Nostr!');
+		const ribbonIconEl = this.addRibbonIcon('newspaper', 'Publish to Nostr', async (evt: MouseEvent) => {
+
+			if(!this.configuration.privateKey) {
+				new Notice('No private key set for Nostr Article Publish');
+			}
+
+			const file = this.app.workspace.getActiveFile()
+			if(file) {
+				let content: string = await this.app.vault.read(file);
+				if(this.nostrService.Connected()){
+					new PublishModal(this.app, this.nostrService, file, this).open()
+				}
+
+			}
 		});
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass('my-plugin-ribbon-class');

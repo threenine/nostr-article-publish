@@ -38,6 +38,9 @@ export default class NostrService {
 		this.relaysConnect().then(result => { console.log("Connected to relays")});
 	}
 
+	public Connected(): boolean {
+		return this.connected;
+	}
 	 async relaysConnect(): Promise<void> {
 		this.refreshRelayUrls();
 		this.connectedRelays = [];
