@@ -7,16 +7,15 @@ export function validatePrivateKey(key: string): boolean {
 }
 
 export function toHex(value: string): string {
+
 	if (value && value.startsWith("nsec")) {
 		let decodedPrivateKey = nip19.decode(value);
 		return decodedPrivateKey.data as string;
 	}
-	if (value && value.startsWith("npub")) {
-		let decodedPublicKey = nip19.decode(value);
-		return decodedPublicKey.data as string;
-	}
-	return value;
+
+  return value;
 }
+
 
 export function toUint8Array(hex: string): Uint8Array {
 	if (hex.length % 2 !== 0) {

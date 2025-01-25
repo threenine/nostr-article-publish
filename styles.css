@@ -7,7 +7,31 @@
 	font-size: small;
 	color:#9f9e9e
 }
-
+.publish-control-container {
+	margin-top: 20px;
+	width: 100%;
+}
+.input-label{
+	font-weight: bold;
+	font-size: 12px;
+	margin-bottom: 2px;
+	width: 100%;
+	border: none;
+	outline: none;
+	padding: 5px;
+	background-color: transparent;
+}
+.input-label-small{
+	font-weight: bold;
+	font-size: 8px;
+	margin-bottom: 2px;
+	width: 100%;
+	border: none;
+	outline: none;
+	padding: 5px;
+	background-color: transparent;
+	color: orange;
+}
 .publish-modal-info {
 	margin-bottom: 20px;
 	text-align: center;
@@ -52,105 +76,3 @@
 }
 
 
-.bookmark-card {
-	border: 1px solid #ccc;
-	border-radius: 8px;
-	padding: 10px;
-	margin-bottom: 10px;
-}
-
-.nobookmarks-card {
-	border: 1px solid #ccc;
-	border-radius: 8px;
-	padding: 10px;
-	margin-bottom: 10px;
-	align-items : center;
-	text-align : center;
-}
-
-.bookmark-content {
-	font-size: 16px;
-	margin-bottom: 8px;
-	word-wrap: break-word;
-}
-
-.bookmark-created-at {
-	font-size: 12px;
-	color: #666;
-	margin-top: 8px;
-}
-
-.bookmark-pubkey {
-	display: flex;
-	align-items: center;
-	margin-top: 8px;
-}
-
-.bookmark-profile-pic {
-	width: 30px;
-	height: 30px;
-	border-radius: 50%;
-	margin-right: 8px;
-}
-
-.bookmark-pubkey span {
-	font-size: 14px;
-}
-
-.bookmark-btn {
-	margin-top: 10px;
-	margin-left: 5px;
-	margin-right: 5px;
-}
-
-.source-article-link {
-	font-weight: bold;
-}
-
-.highlight-content-source {
-	display: flex;
-	align-items: center;
-	margin-top: 8px;
-	font-size: 14px;
-	padding-left: 5px;
-}
-
-.highlight-created-at {
-	font-size: 12px;
-	color: #666;
-	margin-top: 8px;
-	margin-left: 5px;
-	align-items: center;
-	justify-content: space-between;
-	display: flex;
-}
-
-.highlight-content-source > span {
-	margin-right: 5px;
-}
-
-.highlight-content {
-	font-size: 16px;
-	margin-bottom: 8px;
-	word-wrap: break-word;
-	cursor: pointer;
-	padding: 5px;
-	border-radius: 5px;
-	transition: background-color 0.3s, color 0.3s;
-}
-
-.highlight-content:hover {
-	background-color: #f0f0f0;
-	color: black;
-}
-
-.highlight-btn {
-	margin-top: 2px;
-	margin-left: 5px;
-	margin-right: 5px;
-	cursor: pointer;
-	background-color: transparent;
-}
-.small-text {
-	font-size: 4px;
-}

@@ -1,7 +1,7 @@
 import {App, Modal, Notice, Setting, TextAreaComponent, TextComponent, TFile} from "obsidian";
 import NostrArticlePublishPlugin from "../../../main";
 import NostrService from "../../services/NostrService";
-import {validateURL} from "../../utilities";
+
 
 
 export default class PublishModal extends Modal {
@@ -34,21 +34,19 @@ export default class PublishModal extends Modal {
 		contentEl.createEl("h2", {text: `Publish to Nostr`})
 			.addClass("publish-modal-title");
 
-		const titleContainer = contentEl.createEl("div");
-		titleContainer.addClass("publish-title-container");
 
-
-
-		contentEl.createEl("h6", {text: `Title`});
+		contentEl.createEl("p", {text: `Title`, cls: 'input-label'});
 		let titleText = new TextComponent(contentEl)
 			.setPlaceholder(`${doc.title}`)
 			.setValue(`${doc.title}`);
 
 		titleText.inputEl.setCssStyles({
 			width: "100%",
-			marginBottom: "10px",
+			marginBottom: "5px",
 		});
-		contentEl.createEl("h6", { text: `Summary` });
+
+
+		contentEl.createEl("p", { text: `Summary`,  cls: 'input-label' });
 		let summaryText = new TextAreaComponent(contentEl)
 			.setPlaceholder("A brief summary of the article")
 			.setValue(doc.summary);
@@ -58,12 +56,13 @@ export default class PublishModal extends Modal {
 			height: "100px",
 			marginBottom: "10px",
 		});
+		summaryText.inputEl.classList.add("publish-modal-input");
 
 		let featureImage: any | null = null;
 
 		new Setting(contentEl)
 			.setName("Feature Image")
-			.setDesc("Feature image for your article")
+			.setClass("input-label")
 			.addButton((button) =>
 				button
 					.setButtonText("Upload")
@@ -81,14 +80,14 @@ export default class PublishModal extends Modal {
 								const file = input.files[0];
 								if (file) {
 									if (!file.type.startsWith('image/')) {
-										new Notice('❌ Invalid file type. (*.jpg, *.jpeg, *.png)');
+										new Notice('❌ Invalid file type. (*.jpg, *.jpeg, *.png) only');
 										return;
 									}
 
 									let maxSizeInBytes = 10 * 1024 * 1024; // 10 MB
 
 									if (file.size > maxSizeInBytes) {
-										new Notice('❌ File size exceeds the limit. Please upload a smaller image.');
+										new Notice('❌ File size exceeds the limit.');
 										return;
 									}
 									featureImage = file;
@@ -99,7 +98,6 @@ export default class PublishModal extends Modal {
 
 
 									imageNameDiv.textContent = featureImage.name;
-									new Notice(`✅ Selected image : ${file.name}`);
 								}
 							} else {
 								new Notice(`❗️ No file selected.`);
@@ -128,6 +126,7 @@ export default class PublishModal extends Modal {
 			cursor: "pointer",
 			fontSize: "14px",
 			color: "red",
+			marginTop: "10px",
 		});
 
 		clearImageButton.textContent = "❌ Remove";
@@ -142,10 +141,10 @@ export default class PublishModal extends Modal {
 		}
 
 		clearImageButton.addEventListener("click", clearSelectedImage);
-
+		contentEl.createEl("hr");
 		contentEl.createEl("h6", {text: `Tags`});
 		const tagContainer = contentEl.createEl("div");
-		tagContainer.addClass("publish-title-container");
+
 
 
 		let badges = new TextComponent(contentEl).setPlaceholder(
@@ -170,6 +169,62 @@ export default class PublishModal extends Modal {
 			badgesContainer.appendChild(pillElement);
 		});
 
+
+		new Setting(this.contentEl)
+			.addButton(btn => {
+				btn.setButtonText("Cancel")
+					.onClick(() => {
+						this.close();
+					});
+			})
+			.addButton((btn) =>
+				btn
+					.setButtonText('Publish')
+					.setCta()
+					.onClick(async () => {
+						btn.setButtonText("Publishing...")
+							.setDisabled(true);
+						if(featureImage === null ||featureImage.path === "") {
+							new Notice("❌  A Feature Image is required.")
+							btn.setButtonText("Publish")
+								.setDisabled(false);
+							return;
+						}
+						let result = await publish(this.nostrService, doc.content, this.file, summaryText.getValue(), featureImage.path, titleText.getValue(), articleTags);
+
+						if (result) {
+							new Notice(`✅ Publish Successful`);
+							this.close();
+						} else {
+							new Notice(`❌ Publish Failed`);
+							btn.setButtonText("Publish")
+								.setDisabled(false);
+						}
+					})).setClass("publish-control-container");
+
+	async function publish(service:NostrService, content: string, file: TFile, summary: string, image: string, title: string, tags: string[]): Promise<Boolean>  {
+
+		try {
+
+			let res = await service.publish(
+				content,
+				file,
+				summary,
+				featureImage,
+				title,
+				tags
+			);
+
+			console.log(res);
+			return !!res;
+
+		} catch (error) {
+			console.error(error);
+			return false;
+		}
+
+
+	}
 
 		function createBadgeElement(tag: string) {
 			const pillElement = document.createElement("div");
@@ -211,7 +266,6 @@ export class Article {
 	title: string;
 	summary: string;
 	tags: string[];
-	image: string;
 	content: string;
 }
 
@@ -242,10 +296,7 @@ export class ArticleExtractor implements Extractor {
 		if (fileInfo !== undefined) {
 			response.title = fileInfo.title || file.basename;
 			response.summary = fileInfo.summary || "";
-			if (validateURL(fileInfo.image)) {
-				response.image = fileInfo.image;
-			}
-			response.tags = fileInfo.tags;
+		    response.tags = fileInfo.tags;
 		}
 		 response.content = (await this.app.vault.read(file)).replace(this.frontMatterRegex, "").trim();
 

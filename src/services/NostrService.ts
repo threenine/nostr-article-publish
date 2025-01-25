@@ -1,8 +1,10 @@
 import NostrArticlePublishPlugin from "../../main";
-import {App, Notice} from "obsidian";
+import {App, TFile} from "obsidian";
 import {NostrPublishConfiguration} from "../types";
-import {Relay, SimplePool} from "nostr-tools";
+import {finalizeEvent, Relay, SimplePool, VerifiedEvent} from "nostr-tools";
 import {DEFAULT_EXPLICIT_RELAY_URLS, toHex, validateURL} from "../utilities";
+import {v4 as uuidv4} from "uuid";
+
 
 export default class NostrService {
 	private privateKey: string;
@@ -16,32 +18,34 @@ export default class NostrService {
 
 	constructor(plugin: NostrArticlePublishPlugin, app: App, configuration: NostrPublishConfiguration) {
 
-		if(!configuration.privateKey) {
+		if (!configuration.privateKey) {
 			console.log("No private key set for Nostr Publish");
 			return;
 		}
 		this.plugin = plugin;
 		this.app = app;
-		this.privateKey = toHex(configuration.privateKey);
+		this.privateKey = configuration.privateKey;
 
 		this.relayURLs = [];
-		if(!configuration.relayURLs || configuration.relayURLs.length === 0) {
+		if (!configuration.relayURLs || configuration.relayURLs.length === 0) {
 			this.relayURLs = DEFAULT_EXPLICIT_RELAY_URLS;
-		}
-		else {
+		} else {
 			for (let url of configuration.relayURLs) {
 				if (validateURL(url)) {
 					this.relayURLs.push(url);
 				}
 			}
 		}
-		this.relaysConnect().then(result => { console.log("Connected to relays")});
+		this.relaysConnect().then(result => {
+			console.log(`Connected to relays :${result} `)
+		});
 	}
 
 	public Connected(): boolean {
 		return this.connected;
 	}
-	 async relaysConnect(): Promise<void> {
+
+	async relaysConnect(): Promise<void> {
 		this.refreshRelayUrls();
 		this.connectedRelays = [];
 
@@ -55,7 +59,7 @@ export default class NostrService {
 					}
 
 					const handleFailure = () => {
-					    this.connectedRelays.remove(relayAttempt);
+						this.connectedRelays.remove(relayAttempt);
 						resolve(null);
 					};
 
@@ -68,12 +72,13 @@ export default class NostrService {
 		});
 
 		Promise.all(connectionPromises).then(() => {
-				if (this.connectedRelays.length > 0) {
+			if (this.connectedRelays.length > 0) {
 				this.setConnectionPool();
 				this.connected = true;
 			}
 		});
 	}
+
 	setConnectionPool = () => {
 		this.pool = new SimplePool()
 		this.poolUrls = [];
@@ -81,6 +86,7 @@ export default class NostrService {
 			this.poolUrls.push(relay.url);
 		}
 	}
+
 	refreshRelayUrls(): void {
 
 		if (!this.plugin.configuration.relayURLs || this.plugin.configuration.relayURLs.length === 0) {
@@ -94,7 +100,6 @@ export default class NostrService {
 		}
 	}
 
-
 	getRelayInfo(relayUrl: string): boolean {
 		let connected: boolean = false;
 		for (let r of this.connectedRelays) {
@@ -103,5 +108,83 @@ export default class NostrService {
 			}
 		}
 		return connected;
+	}
+
+	async publish(
+		content: string,
+		file: TFile,
+		summary: string,
+		image: string,
+		title: string,
+		tags: string[]
+	): Promise<Boolean> {
+
+
+		let uuid: string = uuidv4().substring(0, 8);
+		let noteTags: any = [["d", uuid]];
+		noteTags.push(["summary", summary]);
+		noteTags.push(["title", title]);
+		if (tags.length > 0) {
+			for (const tag of tags) {
+				noteTags.push(["t", tag]);
+			}
+		}
+		let timestamp = Math.floor(Date.now() / 1000);
+		noteTags.push(["published_at", timestamp.toString()]);
+		let note = {
+			kind: 30023,
+			created_at: timestamp,
+			tags: noteTags,
+			content: content
+		};
+
+		let hex = toHex(this.privateKey);
+		let finalEvent = finalizeEvent(note, Buffer.from(hex));
+
+		let result = this.publishingToRelays(finalEvent)
+
+		return true;
+	}
+
+	async publishingToRelays(event: VerifiedEvent)
+		: Promise<{ success: Boolean, publishedRelays: string[] }> {
+
+		try {
+			let publishPromises = this.connectedRelays.map(async (relay: Relay) => {
+				try {
+					if (relay.connected) {
+					   	await relay.publish(event);
+						return {success: true, url: relay.url};
+
+					} else {
+						return {success: false, url: relay.url};
+					}
+				} catch (error) {
+					return {success: false, url: relay.url};
+
+				}
+			});
+			let results = await Promise.all(publishPromises);
+			let publishedRelays: string[] = results
+				.filter((result) => result.success)
+				.map((result) => result.url);
+
+			console.log(
+				`Published to ${publishedRelays.length} / ${this.connectedRelays.length} relays.`
+			);
+			if (publishedRelays.length === 0) {
+				console.log("Didn't send to any relays");
+				return {success: false, publishedRelays: []};
+
+			} else {
+				console.log("Sent to relays");
+				return {success: true, publishedRelays};
+			}
+
+		} catch (error) {
+			console.error("An error occurred while publishing to relays", error);
+			return {success: false, publishedRelays: []};
+		}
+
 	}
 }

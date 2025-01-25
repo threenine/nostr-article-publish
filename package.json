@@ -8,7 +8,11 @@
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"version": "node version-bump.mjs && git add manifest.json versions.json"
 	},
-	"keywords": ["nostr", "longform", "obsidian"],
+	"keywords": [
+		"nostr",
+		"longform",
+		"obsidian"
+	],
 	"author": "threenine",
 	"license": "MIT",
 	"devDependencies": {
@@ -23,7 +27,9 @@
 	},
 	"dependencies": {
 		"@noble/hashes": "^1.7.1",
+		"@noble/secp256k1": "^2.2.3",
 		"bech32": "^2.0.0",
-		"nostr-tools": "^2.10.4"
+		"nostr-tools": "^2.10.4",
+		"uuid": "^11.0.5"
 	}
 }
