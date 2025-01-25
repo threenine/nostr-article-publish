@@ -1,5 +1,19 @@
 import { nip19 } from "nostr-tools";
 
+export const DEFAULT_EXPLICIT_RELAY_URLS = [
+	'wss://relay.geekiam.services',
+	'wss://relay.damus.io',
+	'wss://relay.primal.net',
+	'wss://relay.nostr.band',
+	'wss://nos.lol'
+];
+export const NOSTR_TITLE_TAG: string = "title";
+export const NOSTR_SUMMARY_TAG: string = "summary";
+export const NOSTR_D_TAG: string = "d";
+export const NOSTR_PUBLISHED_AT_TAG: string = "published_at";
+export const NOSTR_TAGS_TAG: string = "t";
+
+
 export function validatePrivateKey(key: string): boolean {
 	return (
 		 key.length === 63 && key.startsWith("nsec")
@@ -40,13 +54,7 @@ export function validateURL(url: string): boolean {
 	}
 }
 
-export const DEFAULT_EXPLICIT_RELAY_URLS = [
-	'wss://relay.geekiam.services',
-	'wss://relay.damus.io',
-	'wss://relay.primal.net',
-	'wss://relay.nostr.band',
-	'wss://nos.lol'
-];
+
 
 export function setAttributes(element: any, attributes: any) {
 	for (let key in attributes) {

@@ -2,7 +2,14 @@ import NostrArticlePublishPlugin from "../../main";
 import {App, TFile} from "obsidian";
 import {NostrPublishConfiguration} from "../types";
 import {finalizeEvent, Relay, SimplePool, VerifiedEvent} from "nostr-tools";
-import {DEFAULT_EXPLICIT_RELAY_URLS, toHex, validateURL} from "../utilities";
+import {
+	DEFAULT_EXPLICIT_RELAY_URLS,
+	NOSTR_D_TAG, NOSTR_PUBLISHED_AT_TAG,
+	NOSTR_SUMMARY_TAG, NOSTR_TAGS_TAG,
+	NOSTR_TITLE_TAG,
+	toHex,
+	validateURL
+} from "../utilities";
 import {v4 as uuidv4} from "uuid";
 
 
@@ -26,7 +33,9 @@ export default class NostrService {
 		this.app = app;
 		this.privateKey = configuration.privateKey;
 
+		this.pool = new SimplePool()
 		this.relayURLs = [];
+		this.poolUrls = [];
 		if (!configuration.relayURLs || configuration.relayURLs.length === 0) {
 			this.relayURLs = DEFAULT_EXPLICIT_RELAY_URLS;
 		} else {
@@ -52,17 +61,11 @@ export default class NostrService {
 		let connectionPromises = this.relayURLs.map((url) => {
 			return new Promise<Relay | null>(async (resolve) => {
 				try {
-					const relayAttempt = await Relay.connect(url);
-
+					let relayAttempt = await Relay.connect(url);
 					relayAttempt.onclose = () => {
-						handleFailure();
-					}
-
-					const handleFailure = () => {
 						this.connectedRelays.remove(relayAttempt);
 						resolve(null);
-					};
-
+					}
 					this.connectedRelays.push(relayAttempt);
 					resolve(relayAttempt);
 				} catch (error) {
@@ -80,8 +83,7 @@ export default class NostrService {
 	}
 
 	setConnectionPool = () => {
-		this.pool = new SimplePool()
-		this.poolUrls = [];
+
 		for (const relay of this.connectedRelays) {
 			this.poolUrls.push(relay.url);
 		}
@@ -100,7 +102,7 @@ export default class NostrService {
 		}
 	}
 
-	getRelayInfo(relayUrl: string): boolean {
+	relayInformation(relayUrl: string): boolean {
 		let connected: boolean = false;
 		for (let r of this.connectedRelays) {
 			if (r.url == relayUrl + "/") {
@@ -112,25 +114,23 @@ export default class NostrService {
 
 	async publish(
 		content: string,
-		file: TFile,
 		summary: string,
 		image: string,
 		title: string,
 		tags: string[]
 	): Promise<Boolean> {
 
-
 		let uuid: string = uuidv4().substring(0, 8);
-		let noteTags: any = [["d", uuid]];
-		noteTags.push(["summary", summary]);
-		noteTags.push(["title", title]);
+		let noteTags: any = [[NOSTR_D_TAG, uuid]];
+		noteTags.push([NOSTR_SUMMARY_TAG, summary]);
+		noteTags.push([NOSTR_TITLE_TAG, title]);
 		if (tags.length > 0) {
 			for (const tag of tags) {
-				noteTags.push(["t", tag]);
+				noteTags.push([NOSTR_TAGS_TAG, tag]);
 			}
 		}
 		let timestamp = Math.floor(Date.now() / 1000);
-		noteTags.push(["published_at", timestamp.toString()]);
+		noteTags.push([NOSTR_PUBLISHED_AT_TAG, timestamp.toString()]);
 		let note = {
 			kind: 30023,
 			created_at: timestamp,
@@ -153,7 +153,7 @@ export default class NostrService {
 			let publishPromises = this.connectedRelays.map(async (relay: Relay) => {
 				try {
 					if (relay.connected) {
-					   	await relay.publish(event);
+						await relay.publish(event);
 						return {success: true, url: relay.url};
 
 					} else {

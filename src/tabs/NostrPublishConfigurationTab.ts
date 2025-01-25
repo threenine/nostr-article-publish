@@ -128,13 +128,13 @@ export class NostrPublishConfigurationTab extends PluginSettingTab {
 			for (const [i, url] of this.plugin.configuration.relayURLs.entries()) {
 				new Setting(this.containerEl)
 					.setDesc(
-						`${this.plugin.nostrService.getRelayInfo(url)
+						`${this.plugin.nostrService.relayInformation(url)
 							? "connected"
 							: "disconnected"
 						}`
 					)
 					.setName(
-						`${this.plugin.nostrService.getRelayInfo(url)
+						`${this.plugin.nostrService.relayInformation(url)
 							? "🟢"
 							: "🔴"
 						}  ${url} `

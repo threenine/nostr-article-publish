@@ -205,10 +205,8 @@ export default class PublishModal extends Modal {
 	async function publish(service:NostrService, content: string, file: TFile, summary: string, image: string, title: string, tags: string[]): Promise<Boolean>  {
 
 		try {
-
 			let res = await service.publish(
 				content,
-				file,
 				summary,
 				featureImage,
 				title,
