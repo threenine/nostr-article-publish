@@ -12,7 +12,7 @@ export const NOSTR_SUMMARY_TAG: string = "summary";
 export const NOSTR_D_TAG: string = "d";
 export const NOSTR_PUBLISHED_AT_TAG: string = "published_at";
 export const NOSTR_TAGS_TAG: string = "t";
-
+export const NOSTR_IMAGE_TAG: string = "image";
 
 export function validatePrivateKey(key: string): boolean {
 	return (

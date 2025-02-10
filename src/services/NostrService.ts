@@ -1,10 +1,10 @@
 import NostrArticlePublishPlugin from "../../main";
-import {App, TFile} from "obsidian";
+import {App} from "obsidian";
 import {NostrPublishConfiguration} from "../types";
 import {finalizeEvent, Relay, SimplePool, VerifiedEvent} from "nostr-tools";
 import {
 	DEFAULT_EXPLICIT_RELAY_URLS,
-	NOSTR_D_TAG, NOSTR_PUBLISHED_AT_TAG,
+	NOSTR_D_TAG, NOSTR_IMAGE_TAG, NOSTR_PUBLISHED_AT_TAG,
 	NOSTR_SUMMARY_TAG, NOSTR_TAGS_TAG,
 	NOSTR_TITLE_TAG,
 	toHex,
@@ -124,6 +124,7 @@ export default class NostrService {
 		let noteTags: any = [[NOSTR_D_TAG, uuid]];
 		noteTags.push([NOSTR_SUMMARY_TAG, summary]);
 		noteTags.push([NOSTR_TITLE_TAG, title]);
+		noteTags.push([NOSTR_IMAGE_TAG, image]);
 		if (tags.length > 0) {
 			for (const tag of tags) {
 				noteTags.push([NOSTR_TAGS_TAG, tag]);

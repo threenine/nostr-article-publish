@@ -1,36 +1,36 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin } from 'obsidian';
+import {App, Editor, MarkdownView, Modal, Notice, Plugin} from 'obsidian';
 import {NostrPublishConfigurationTab} from './src/tabs/NostrPublishConfigurationTab';
 import {NostrPublishConfiguration} from './src/types';
 import NostrService from "./src/services/NostrService";
-import {DEFAULT_EXPLICIT_RELAY_URLS, setAttributes} from "./src/utilities";
-import PublishService from "./src/services/PublishService";
+import {DEFAULT_EXPLICIT_RELAY_URLS} from "./src/utilities";
+
 
 import PublishModal from "./src/modals/PublishModal";
 
 export default class NostrArticlePublishPlugin extends Plugin {
-	configuration : NostrPublishConfiguration
+	configuration: NostrPublishConfiguration
 	nostrService: NostrService;
 	statusBar: any;
-	private publishingService : PublishService
+
 	async onload() {
 		await this.loadConfiguration();
-        this.startService();
+		this.startService();
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new NostrPublishConfigurationTab(this.app, this));
-		this.publishingService = new PublishService(this.app, this.nostrService);
+
 
 
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('newspaper', 'Publish to Nostr', async (evt: MouseEvent) => {
 
-			if(!this.configuration.privateKey) {
+			if (!this.configuration.privateKey) {
 				new Notice('No private key set for Nostr Article Publish');
 			}
 
 			const file = this.app.workspace.getActiveFile()
-			if(file) {
+			if (file) {
 				let content: string = await this.app.vault.read(file);
-				if(this.nostrService.Connected()){
+				if (this.nostrService.Connected()) {
 					new PublishModal(this.app, this.nostrService, file, this).open()
 				}
 
@@ -81,7 +81,6 @@ export default class NostrArticlePublishPlugin extends Plugin {
 		});
 
 
-
 		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
 		// Using this function will automatically remove the event listener when this plugin is disabled.
 		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
@@ -95,9 +94,11 @@ export default class NostrArticlePublishPlugin extends Plugin {
 	onunload() {
 
 	}
+
 	startService() {
 		this.nostrService = new NostrService(this, this.app, this.configuration);
 	}
+
 	async loadConfiguration() {
 		this.configuration = Object.assign({}, {
 			privateKey: "",

@@ -1,15 +1,18 @@
-import {App, Modal, Notice, Setting, TextAreaComponent, TextComponent, TFile} from "obsidian";
+import {App, Modal, Notice, requestUrl, Setting, TextAreaComponent, TextComponent, TFile} from "obsidian";
 import NostrArticlePublishPlugin from "../../../main";
 import NostrService from "../../services/NostrService";
 
 
-
 export default class PublishModal extends Modal {
 	plugin: NostrArticlePublishPlugin;
+	private readonly UPLOAD_ENDPOINT = "https://media.geekiam.systems/";
+
 
 	constructor(app: App, private nostrService: NostrService, private file: TFile, plugin: NostrArticlePublishPlugin) {
 		super(app);
+
 		this.plugin = plugin;
+
 	}
 
 	async onOpen() {
@@ -22,7 +25,6 @@ export default class PublishModal extends Modal {
 			return;
 		}
 		let articleTags: string[] = [];
-
 		let extractor = new ArticleExtractor(this.app)
 
 		let doc = await extractor.extract(this.file);
@@ -33,7 +35,6 @@ export default class PublishModal extends Modal {
 
 		contentEl.createEl("h2", {text: `Publish to Nostr`})
 			.addClass("publish-modal-title");
-
 
 		contentEl.createEl("p", {text: `Title`, cls: 'input-label'});
 		let titleText = new TextComponent(contentEl)
@@ -46,7 +47,7 @@ export default class PublishModal extends Modal {
 		});
 
 
-		contentEl.createEl("p", { text: `Summary`,  cls: 'input-label' });
+		contentEl.createEl("p", {text: `Summary`, cls: 'input-label'});
 		let summaryText = new TextAreaComponent(contentEl)
 			.setPlaceholder("A brief summary of the article")
 			.setValue(doc.summary);
@@ -59,52 +60,50 @@ export default class PublishModal extends Modal {
 		summaryText.inputEl.classList.add("publish-modal-input");
 
 		let featureImage: any | null = null;
+		let featureImagePath: string = "";
 
 		new Setting(contentEl)
 			.setName("Feature Image")
+			.setDesc("for consistency across clients, use a 1024x470 image.")
 			.setClass("input-label")
-			.addButton((button) =>
-				button
-					.setButtonText("Upload")
-					.setIcon("upload")
-					.setTooltip("Upload an image file for your article banner.")
-					.onClick(async () => {
-						const input = document.createElement('input');
-						input.type = 'file';
-						input.multiple = false;
 
-						input.click();
+			.addButton((button) => {
+					return button
+						.setButtonText("Upload")
+						.setIcon("upload")
+						.setTooltip("Upload an image file for your article banner.")
+						.onClick(async () => {
+							const input = document.createElement('input');
+							input.type = 'file';
+							input.multiple = false;
+							input.accept = 'image/*';
+							input.click();
+							input.addEventListener('change', async () => {
 
-						input.addEventListener('change', async () => {
-							if (input.files !== null) {
-								const file = input.files[0];
-								if (file) {
-									if (!file.type.startsWith('image/')) {
-										new Notice('❌ Invalid file type. (*.jpg, *.jpeg, *.png) only');
-										return;
-									}
-
-									let maxSizeInBytes = 10 * 1024 * 1024; // 10 MB
-
-									if (file.size > maxSizeInBytes) {
-										new Notice('❌ File size exceeds the limit.');
-										return;
-									}
-									featureImage = file;
-
-									imagePreview.src = URL.createObjectURL(featureImage);
+								if (input.files && input.files[0]) {
+									imagePreview.src = URL.createObjectURL(input.files[0]);
 									imagePreview.style.display = "block";
-									clearImageButton.style.display = "inline-block";
+									const formData = new FormData();
+									formData.append('File', input.files[0]);
+									try {
+										let response = await requestUrl({
+											url: this.UPLOAD_ENDPOINT,
+											method: "POST",
+											headers: {
+												"Content-Type": getContentType(input.files[0].name),
+											},
+											body: await input.files[0].arrayBuffer()
+										})
+										featureImagePath = response.headers.location;
+										featureImage = input.files[0];
 
-
-									imageNameDiv.textContent = featureImage.name;
+									} catch (e) {
+										console.log(e)
+									}
 								}
-							} else {
-								new Notice(`❗️ No file selected.`);
-							}
+							});
 						});
-
-					})
+				}
 			);
 
 		let imagePreview = contentEl.createEl("img");
@@ -143,9 +142,6 @@ export default class PublishModal extends Modal {
 		clearImageButton.addEventListener("click", clearSelectedImage);
 		contentEl.createEl("hr");
 		contentEl.createEl("h6", {text: `Tags`});
-		const tagContainer = contentEl.createEl("div");
-
-
 
 		let badges = new TextComponent(contentEl).setPlaceholder(
 			`Add a tag here and press enter`
@@ -184,13 +180,16 @@ export default class PublishModal extends Modal {
 					.onClick(async () => {
 						btn.setButtonText("Publishing...")
 							.setDisabled(true);
-						if(featureImage === null ||featureImage.path === "") {
+
+						if (featureImage === null || featureImage.name === "") {
 							new Notice("❌  A Feature Image is required.")
 							btn.setButtonText("Publish")
 								.setDisabled(false);
 							return;
 						}
-						let result = await publish(this.nostrService, doc.content, this.file, summaryText.getValue(), featureImage.path, titleText.getValue(), articleTags);
+
+
+						let result = await publish(this.nostrService, doc.content, this.file, summaryText.getValue(), featureImagePath, titleText.getValue(), articleTags);
 
 						if (result) {
 							new Notice(`✅ Publish Successful`);
@@ -202,27 +201,28 @@ export default class PublishModal extends Modal {
 						}
 					})).setClass("publish-control-container");
 
-	async function publish(service:NostrService, content: string, file: TFile, summary: string, image: string, title: string, tags: string[]): Promise<Boolean>  {
+		async function publish(service: NostrService, content: string, file: TFile, summary: string, image: string, title: string, tags: string[]): Promise<Boolean> {
 
-		try {
-			let res = await service.publish(
-				content,
-				summary,
-				featureImage,
-				title,
-				tags
-			);
 
-			console.log(res);
-			return !!res;
+			try {
 
-		} catch (error) {
-			console.error(error);
-			return false;
+
+				let res = await service.publish(
+					content,
+					summary,
+					image,
+					title,
+					tags
+				);
+
+				console.log(res);
+				return !!res;
+
+			} catch (error) {
+				console.error(error);
+				return false;
+			}
 		}
-
-
-	}
 
 		function createBadgeElement(tag: string) {
 			const pillElement = document.createElement("div");
@@ -249,15 +249,28 @@ export default class PublishModal extends Modal {
 			badgesContainer.appendChild(badge);
 			badges.setValue("");
 		}
+		function getContentType(filename: string): string {
+			let extension = filename.split('.').pop()?.toLowerCase();
+			switch (extension) {
+				case 'jpg':
+				case 'jpeg':
+					return 'image/jpeg';
+				case 'png':
+					return 'image/png';
+				case 'gif':
+					return 'image/gif';
+				// Add more types as needed
+				default:
+					return 'application/octet-stream'; // Default to a generic binary type if not recognized
+			}
+		}
 	}
 
 
-
-onClose()
-{
-	const {contentEl} = this;
-	contentEl.empty();
-}
+	onClose() {
+		const {contentEl} = this;
+		contentEl.empty();
+	}
 }
 
 export class Article {
@@ -294,9 +307,9 @@ export class ArticleExtractor implements Extractor {
 		if (fileInfo !== undefined) {
 			response.title = fileInfo.title || file.basename;
 			response.summary = fileInfo.summary || "";
-		    response.tags = fileInfo.tags;
+			response.tags = fileInfo.tags;
 		}
-		 response.content = (await this.app.vault.read(file)).replace(this.frontMatterRegex, "").trim();
+		response.content = (await this.app.vault.read(file)).replace(this.frontMatterRegex, "").trim();
 
 		return response;
 	}
