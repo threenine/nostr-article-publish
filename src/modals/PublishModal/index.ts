@@ -1,17 +1,20 @@
 import {App, Modal, Notice, requestUrl, Setting, TextAreaComponent, TextComponent, TFile} from "obsidian";
 import NostrArticlePublishPlugin from "../../../main";
 import NostrService from "../../services/NostrService";
+import * as path from "node:path";
 
 
 export default class PublishModal extends Modal {
 	plugin: NostrArticlePublishPlugin;
 	private readonly UPLOAD_ENDPOINT = "https://media.geekiam.systems/";
 
+	app: App;
 
 	constructor(app: App, private nostrService: NostrService, private file: TFile, plugin: NostrArticlePublishPlugin) {
 		super(app);
 
 		this.plugin = plugin;
+		this.app = app;
 
 	}
 
@@ -83,8 +86,6 @@ export default class PublishModal extends Modal {
 								if (input.files && input.files[0]) {
 									imagePreview.src = URL.createObjectURL(input.files[0]);
 									imagePreview.style.display = "block";
-									const formData = new FormData();
-									formData.append('File', input.files[0]);
 									try {
 										let response = await requestUrl({
 											url: this.UPLOAD_ENDPOINT,
@@ -187,6 +188,43 @@ export default class PublishModal extends Modal {
 								.setDisabled(false);
 							return;
 						}
+						let imagePaths: string[] = [];
+						let vaultResolvedLinks = this.app.metadataCache.resolvedLinks;
+						if (vaultResolvedLinks[this.file.path]) {
+							const fileContents = vaultResolvedLinks[this.file.path];
+							for (const filePath of Object.keys(fileContents)) {
+								if (this.isImagePath(filePath)) {
+									imagePaths.push(filePath);
+								}
+							}
+						}
+
+						if (imagePaths.length > 0) {
+							for (let imagePath of imagePaths) {
+								let imageFile = this.app.vault.getAbstractFileByPath(imagePath);
+
+								if (imageFile instanceof TFile) {
+									let imageBinary = await this.app.vault.readBinary(imageFile);
+									try {
+										let response = await requestUrl({
+											url: this.UPLOAD_ENDPOINT,
+											method: "POST",
+											headers: {
+												"Content-Type": getContentType(imageFile.name),
+											},
+											body: imageBinary
+										})
+										doc.content = doc.content.replace(`![[${imagePath}]]`, `![](${response.headers.location}) `);
+
+									} catch (e) {
+										console.log(e)
+									}
+								}
+
+							}
+
+						}
+						console.log("image paths:", imagePaths)
 
 
 						let result = await publish(this.nostrService, doc.content, this.file, summaryText.getValue(), featureImagePath, titleText.getValue(), articleTags);
@@ -249,6 +287,7 @@ export default class PublishModal extends Modal {
 			badgesContainer.appendChild(badge);
 			badges.setValue("");
 		}
+
 		function getContentType(filename: string): string {
 			let extension = filename.split('.').pop()?.toLowerCase();
 			switch (extension) {
@@ -264,6 +303,12 @@ export default class PublishModal extends Modal {
 					return 'application/octet-stream'; // Default to a generic binary type if not recognized
 			}
 		}
+	}
+
+	isImagePath(filePath: string): boolean {
+		const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg'];
+		const ext = path.extname(filePath).toLowerCase();
+		return imageExtensions.includes(ext);
 	}
 
 
