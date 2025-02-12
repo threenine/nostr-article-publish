@@ -8,14 +8,9 @@ export default class PublishModal extends Modal {
 	plugin: NostrArticlePublishPlugin;
 	private readonly UPLOAD_ENDPOINT = "https://media.geekiam.systems/";
 
-	app: App;
-
 	constructor(app: App, private nostrService: NostrService, private file: TFile, plugin: NostrArticlePublishPlugin) {
 		super(app);
-
 		this.plugin = plugin;
-		this.app = app;
-
 	}
 
 	async onOpen() {
@@ -49,7 +44,6 @@ export default class PublishModal extends Modal {
 			marginBottom: "5px",
 		});
 
-
 		contentEl.createEl("p", {text: `Summary`, cls: 'input-label'});
 		let summaryText = new TextAreaComponent(contentEl)
 			.setPlaceholder("A brief summary of the article")
@@ -67,9 +61,8 @@ export default class PublishModal extends Modal {
 
 		new Setting(contentEl)
 			.setName("Feature Image")
-			.setDesc("for consistency across clients, use a 1024x470 image.")
+			.setDesc("For consistency across clients, use a 1024x470 image.")
 			.setClass("input-label")
-
 			.addButton((button) => {
 					return button
 						.setButtonText("Upload")
@@ -97,6 +90,7 @@ export default class PublishModal extends Modal {
 										})
 										featureImagePath = response.headers.location;
 										featureImage = input.files[0];
+										imageNameDiv.textContent = input.files[0].name;
 
 									} catch (e) {
 										console.log(e)
@@ -183,7 +177,7 @@ export default class PublishModal extends Modal {
 							.setDisabled(true);
 
 						if (featureImage === null || featureImage.name === "") {
-							new Notice("❌  A Feature Image is required.")
+							new Notice("❌  A Feature Image is required. Please upload an image file for your article feature banner.")
 							btn.setButtonText("Publish")
 								.setDisabled(false);
 							return;
@@ -217,20 +211,16 @@ export default class PublishModal extends Modal {
 										doc.content = doc.content.replace(`![[${imagePath}]]`, `![](${response.headers.location}) `);
 
 									} catch (e) {
-										console.log(e)
+										throw new Error(`Failed to upload image ${imagePath}`);
 									}
 								}
-
 							}
-
 						}
-						console.log("image paths:", imagePaths)
-
 
 						let result = await publish(this.nostrService, doc.content, this.file, summaryText.getValue(), featureImagePath, titleText.getValue(), articleTags);
 
 						if (result) {
-							new Notice(`✅ Publish Successful`);
+							new Notice(`✅ Successfully published ${this.file.basename}`);
 							this.close();
 						} else {
 							new Notice(`❌ Publish Failed`);
@@ -240,11 +230,7 @@ export default class PublishModal extends Modal {
 					})).setClass("publish-control-container");
 
 		async function publish(service: NostrService, content: string, file: TFile, summary: string, image: string, title: string, tags: string[]): Promise<Boolean> {
-
-
 			try {
-
-
 				let res = await service.publish(
 					content,
 					summary,
@@ -253,12 +239,10 @@ export default class PublishModal extends Modal {
 					tags
 				);
 
-				console.log(res);
 				return !!res;
 
 			} catch (error) {
-				console.error(error);
-				return false;
+				throw new Error(`Failed to publish ${file.basename}`);
 			}
 		}
 
@@ -334,10 +318,8 @@ export class ArticleExtractor implements Extractor {
 	private app: App;
 	protected frontMatterRegex: RegExp = /---\s*[\s\S]*?\s*---/g;
 
-
 	constructor(app: App) {
 		this.app = app;
-
 	}
 
 	async extract(file: TFile): Promise<Article> {
@@ -358,6 +340,4 @@ export class ArticleExtractor implements Extractor {
 
 		return response;
 	}
-
-
 }

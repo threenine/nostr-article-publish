@@ -1,7 +1,7 @@
 import NostrArticlePublishPlugin from "../../main";
 import {App} from "obsidian";
 import {NostrPublishConfiguration} from "../types";
-import {finalizeEvent, Relay, SimplePool, VerifiedEvent} from "nostr-tools";
+import {finalizeEvent, Relay,  VerifiedEvent} from "nostr-tools";
 import {
 	DEFAULT_EXPLICIT_RELAY_URLS,
 	NOSTR_D_TAG, NOSTR_IMAGE_TAG, NOSTR_PUBLISHED_AT_TAG,
@@ -16,10 +16,7 @@ import {v4 as uuidv4} from "uuid";
 export default class NostrService {
 	private privateKey: string;
 	private plugin: NostrArticlePublishPlugin;
-	private app: App;
 	private connected: boolean;
-	private pool: SimplePool;
-	private poolUrls: string[];
 	private relayURLs: string[];
 	connectedRelays: Relay[];
 
@@ -30,12 +27,8 @@ export default class NostrService {
 			return;
 		}
 		this.plugin = plugin;
-		this.app = app;
 		this.privateKey = configuration.privateKey;
-
-		this.pool = new SimplePool()
 		this.relayURLs = [];
-		this.poolUrls = [];
 		if (!configuration.relayURLs || configuration.relayURLs.length === 0) {
 			this.relayURLs = DEFAULT_EXPLICIT_RELAY_URLS;
 		} else {
@@ -142,9 +135,9 @@ export default class NostrService {
 		let hex = toHex(this.privateKey);
 		let finalEvent = finalizeEvent(note, Buffer.from(hex));
 
-		let result = this.publishingToRelays(finalEvent)
+		let result = await this.publishingToRelays(finalEvent)
 
-		return true;
+		return result.success;
 	}
 
 	async publishingToRelays(event: VerifiedEvent)
@@ -186,6 +179,5 @@ export default class NostrService {
 			console.error("An error occurred while publishing to relays", error);
 			return {success: false, publishedRelays: []};
 		}
-
 	}
 }
