@@ -17,6 +17,7 @@ export default class NostrService {
 	private privateKey: string;
 	private plugin: NostrArticlePublishPlugin;
 	private connected: boolean;
+	private poolUrls: string[];
 	private relayURLs: string[];
 	connectedRelays: Relay[];
 
@@ -29,6 +30,7 @@ export default class NostrService {
 		this.plugin = plugin;
 		this.privateKey = configuration.privateKey;
 		this.relayURLs = [];
+		this.poolUrls = [];
 		if (!configuration.relayURLs || configuration.relayURLs.length === 0) {
 			this.relayURLs = DEFAULT_EXPLICIT_RELAY_URLS;
 		} else {
@@ -76,7 +78,6 @@ export default class NostrService {
 	}
 
 	setConnectionPool = () => {
-
 		for (const relay of this.connectedRelays) {
 			this.poolUrls.push(relay.url);
 		}

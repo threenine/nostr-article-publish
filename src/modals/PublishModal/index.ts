@@ -187,7 +187,7 @@ export default class PublishModal extends Modal {
 						if (vaultResolvedLinks[this.file.path]) {
 							const fileContents = vaultResolvedLinks[this.file.path];
 							for (const filePath of Object.keys(fileContents)) {
-								if (this.isImagePath(filePath)) {
+								if (isImagePath(filePath)) {
 									imagePaths.push(filePath);
 								}
 							}
@@ -287,13 +287,14 @@ export default class PublishModal extends Modal {
 					return 'application/octet-stream'; // Default to a generic binary type if not recognized
 			}
 		}
+		function isImagePath(filePath: string): boolean {
+			const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg'];
+			const ext = path.extname(filePath).toLowerCase();
+			return imageExtensions.includes(ext);
+		}
 	}
 
-	isImagePath(filePath: string): boolean {
-		const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg'];
-		const ext = path.extname(filePath).toLowerCase();
-		return imageExtensions.includes(ext);
-	}
+
 
 
 	onClose() {

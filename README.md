@@ -1,16 +1,7 @@
-# Publish Articles to Nostr from Obsidian
+# Obstrlish
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+An Obsidian plugin that enables the publishing of long form articles to the Nostr Protocol. 
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
-
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
 
 ## First time developing plugins?
 

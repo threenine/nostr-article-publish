@@ -1,9 +1,9 @@
 {
-	"id": "publish-article-nostr",
-	"name": "Nostr Article Publisher",
-	"version": "1.0.0",
-	"minAppVersion": "0.15.0",
-	"description": "Publish long form articles to nostr",
+	"id": "obstrlish",
+	"name": "Obstrlish",
+	"version": "0.1.0",
+	"minAppVersion": "1.8.0",
+	"description": "Publish long form articles to the nostr protocol",
 	"author": "threenine",
 	"authorUrl": "https://threenine.co.uk",
 	"fundingUrl": {
