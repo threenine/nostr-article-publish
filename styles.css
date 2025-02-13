@@ -1,5 +1,11 @@
-.publish-modal-title {
+.publish-modal-title .setting-item-name {
 	color: purple;
+	font-weight: bold;
+	font-size: 22px;
+}
+.publish-modal-title .setting-item-description {
+	font-size: 12px;
+	font-weight: lighter;
 }
 .publish-title-container {
 	margin-bottom: 10px;

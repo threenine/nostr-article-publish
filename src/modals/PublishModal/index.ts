@@ -32,7 +32,6 @@ export default class PublishModal extends Modal {
 		}
 
 		new Setting(contentEl)
-
 			.setDesc("To publish your article to nostr, ensure the following metadata is completed")
 			.setClass("publish-modal-title")
 			.setHeading().setName("Publish").setClass("publish-modal-title")
