@@ -17,7 +17,7 @@ export default class NostrService {
 	private privateKey: string;
 	private plugin: NostrArticlePublishPlugin;
 	private connected: boolean;
-	private poolUrls: string[];
+	poolUrls: string[];
 	private relayURLs: string[];
 	connectedRelays: Relay[];
 
@@ -30,11 +30,11 @@ export default class NostrService {
 		this.plugin = plugin;
 		this.privateKey = configuration.privateKey;
 		this.relayURLs = [];
-		this.poolUrls = [];
+
 		if (!configuration.relayURLs || configuration.relayURLs.length === 0) {
 			this.relayURLs = DEFAULT_EXPLICIT_RELAY_URLS;
 		} else {
-			for (let url of configuration.relayURLs) {
+			for (const url of configuration.relayURLs) {
 				if (validateURL(url)) {
 					this.relayURLs.push(url);
 				}
@@ -53,10 +53,10 @@ export default class NostrService {
 		this.refreshRelayUrls();
 		this.connectedRelays = [];
 
-		let connectionPromises = this.relayURLs.map((url) => {
+		const connectionPromises = this.relayURLs.map((url) => {
 			return new Promise<Relay | null>(async (resolve) => {
 				try {
-					let relayAttempt = await Relay.connect(url);
+					const relayAttempt = await Relay.connect(url);
 					relayAttempt.onclose = () => {
 						this.connectedRelays.remove(relayAttempt);
 						resolve(null);
@@ -88,7 +88,7 @@ export default class NostrService {
 		if (!this.plugin.configuration.relayURLs || this.plugin.configuration.relayURLs.length === 0) {
 			this.relayURLs = DEFAULT_EXPLICIT_RELAY_URLS;
 		} else {
-			for (let url of this.plugin.configuration.relayURLs) {
+			for (const url of this.plugin.configuration.relayURLs) {
 				if (validateURL(url)) {
 					this.relayURLs.push(url);
 				}
@@ -97,8 +97,8 @@ export default class NostrService {
 	}
 
 	relayInformation(relayUrl: string): boolean {
-		let connected: boolean = false;
-		for (let r of this.connectedRelays) {
+		const connected = false;
+		for (const r of this.connectedRelays) {
 			if (r.url == relayUrl + "/") {
 				return r.connected;
 			}
@@ -112,10 +112,10 @@ export default class NostrService {
 		image: string,
 		title: string,
 		tags: string[]
-	): Promise<Boolean> {
+	): Promise<boolean> {
 
-		let uuid: string = uuidv4().substring(0, 8);
-		let noteTags: any = [[NOSTR_D_TAG, uuid]];
+		const uuid: string = uuidv4().substring(0, 8);
+		const noteTags: any = [[NOSTR_D_TAG, uuid]];
 		noteTags.push([NOSTR_SUMMARY_TAG, summary]);
 		noteTags.push([NOSTR_TITLE_TAG, title]);
 		noteTags.push([NOSTR_IMAGE_TAG, image]);
@@ -124,28 +124,28 @@ export default class NostrService {
 				noteTags.push([NOSTR_TAGS_TAG, tag]);
 			}
 		}
-		let timestamp = Math.floor(Date.now() / 1000);
+		const timestamp = Math.floor(Date.now() / 1000);
 		noteTags.push([NOSTR_PUBLISHED_AT_TAG, timestamp.toString()]);
-		let note = {
+		const note = {
 			kind: 30023,
 			created_at: timestamp,
 			tags: noteTags,
 			content: content
 		};
 
-		let hex = toHex(this.privateKey);
-		let finalEvent = finalizeEvent(note, Buffer.from(hex));
+		const hex = toHex(this.privateKey);
+		const finalEvent = finalizeEvent(note, Buffer.from(hex));
 
-		let result = await this.publishingToRelays(finalEvent)
+		const result = await this.publishingToRelays(finalEvent)
 
 		return result.success;
 	}
 
 	async publishingToRelays(event: VerifiedEvent)
-		: Promise<{ success: Boolean, publishedRelays: string[] }> {
+		: Promise<{ success: boolean, publishedRelays: string[] }> {
 
 		try {
-			let publishPromises = this.connectedRelays.map(async (relay: Relay) => {
+			const publishPromises = this.connectedRelays.map(async (relay: Relay) => {
 				try {
 					if (relay.connected) {
 						await relay.publish(event);
@@ -159,8 +159,8 @@ export default class NostrService {
 
 				}
 			});
-			let results = await Promise.all(publishPromises);
-			let publishedRelays: string[] = results
+			const results = await Promise.all(publishPromises);
+			const publishedRelays: string[] = results
 				.filter((result) => result.success)
 				.map((result) => result.url);
 

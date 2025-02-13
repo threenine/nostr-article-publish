@@ -7,12 +7,12 @@ export const DEFAULT_EXPLICIT_RELAY_URLS = [
 	'wss://relay.nostr.band',
 	'wss://nos.lol'
 ];
-export const NOSTR_TITLE_TAG: string = "title";
-export const NOSTR_SUMMARY_TAG: string = "summary";
-export const NOSTR_D_TAG: string = "d";
-export const NOSTR_PUBLISHED_AT_TAG: string = "published_at";
-export const NOSTR_TAGS_TAG: string = "t";
-export const NOSTR_IMAGE_TAG: string = "image";
+export const NOSTR_TITLE_TAG = "title";
+export const NOSTR_SUMMARY_TAG = "summary";
+export const NOSTR_D_TAG = "d";
+export const NOSTR_PUBLISHED_AT_TAG = "published_at";
+export const NOSTR_TAGS_TAG = "t";
+export const NOSTR_IMAGE_TAG = "image";
 
 export function validatePrivateKey(key: string): boolean {
 	return (
@@ -23,7 +23,7 @@ export function validatePrivateKey(key: string): boolean {
 export function toHex(value: string): string {
 
 	if (value && value.startsWith("nsec")) {
-		let decodedPrivateKey = nip19.decode(value);
+		const decodedPrivateKey = nip19.decode(value);
 		return decodedPrivateKey.data as string;
 	}
 
@@ -57,7 +57,7 @@ export function validateURL(url: string): boolean {
 
 
 export function setAttributes(element: any, attributes: any) {
-	for (let key in attributes) {
+	for (const key in attributes) {
 		element.setAttribute(key, attributes[key]);
 	}
 }

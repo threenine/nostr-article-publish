@@ -103,7 +103,7 @@ export class NostrPublishConfigurationTab extends PluginSettingTab {
 					btn.setTooltip("Add this relay");
 					btn.onClick(async () => {
 						try {
-							let addedRelayUrl = this.relayUrlInput.getValue();
+							const addedRelayUrl = this.relayUrlInput.getValue();
 							if (validateURL(addedRelayUrl)) {
 								this.plugin.configuration.relayURLs.push(
 									addedRelayUrl

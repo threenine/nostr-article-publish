@@ -23,11 +23,11 @@ export default class PublishModal extends Modal {
 			return;
 		}
 		let articleTags: string[] = [];
-		let extractor = new ArticleExtractor(this.app)
+		const extractor = new ArticleExtractor(this.app)
 
-		let doc = await extractor.extract(this.file);
+		const doc = await extractor.extract(this.file);
 
-		for (let tag of doc.tags) {
+		for (const tag of doc.tags) {
 			articleTags.push(tag);
 		}
 
@@ -35,7 +35,7 @@ export default class PublishModal extends Modal {
 			.addClass("publish-modal-title");
 
 		contentEl.createEl("p", {text: `Title`, cls: 'input-label'});
-		let titleText = new TextComponent(contentEl)
+		const titleText = new TextComponent(contentEl)
 			.setPlaceholder(`${doc.title}`)
 			.setValue(`${doc.title}`);
 
@@ -45,7 +45,7 @@ export default class PublishModal extends Modal {
 		});
 
 		contentEl.createEl("p", {text: `Summary`, cls: 'input-label'});
-		let summaryText = new TextAreaComponent(contentEl)
+		const summaryText = new TextAreaComponent(contentEl)
 			.setPlaceholder("A brief summary of the article")
 			.setValue(doc.summary);
 
@@ -57,7 +57,7 @@ export default class PublishModal extends Modal {
 		summaryText.inputEl.classList.add("publish-modal-input");
 
 		let featureImage: any | null = null;
-		let featureImagePath: string = "";
+		let featureImagePath = "";
 
 		new Setting(contentEl)
 			.setName("Feature Image")
@@ -80,7 +80,7 @@ export default class PublishModal extends Modal {
 									imagePreview.src = URL.createObjectURL(input.files[0]);
 									imagePreview.style.display = "block";
 									try {
-										let response = await requestUrl({
+										const response = await requestUrl({
 											url: this.UPLOAD_ENDPOINT,
 											method: "POST",
 											headers: {
@@ -101,7 +101,7 @@ export default class PublishModal extends Modal {
 				}
 			);
 
-		let imagePreview = contentEl.createEl("img");
+		const imagePreview = contentEl.createEl("img");
 		imagePreview.setCssStyles({
 			maxWidth: "100%",
 			display: "none",
@@ -138,7 +138,7 @@ export default class PublishModal extends Modal {
 		contentEl.createEl("hr");
 		contentEl.createEl("h6", {text: `Tags`});
 
-		let badges = new TextComponent(contentEl).setPlaceholder(
+		const badges = new TextComponent(contentEl).setPlaceholder(
 			`Add a tag here and press enter`
 		);
 
@@ -182,8 +182,8 @@ export default class PublishModal extends Modal {
 								.setDisabled(false);
 							return;
 						}
-						let imagePaths: string[] = [];
-						let vaultResolvedLinks = this.app.metadataCache.resolvedLinks;
+						const imagePaths: string[] = [];
+						const vaultResolvedLinks = this.app.metadataCache.resolvedLinks;
 						if (vaultResolvedLinks[this.file.path]) {
 							const fileContents = vaultResolvedLinks[this.file.path];
 							for (const filePath of Object.keys(fileContents)) {
@@ -194,13 +194,13 @@ export default class PublishModal extends Modal {
 						}
 
 						if (imagePaths.length > 0) {
-							for (let imagePath of imagePaths) {
-								let imageFile = this.app.vault.getAbstractFileByPath(imagePath);
+							for (const imagePath of imagePaths) {
+								const imageFile = this.app.vault.getAbstractFileByPath(imagePath);
 
 								if (imageFile instanceof TFile) {
-									let imageBinary = await this.app.vault.readBinary(imageFile);
+									const imageBinary = await this.app.vault.readBinary(imageFile);
 									try {
-										let response = await requestUrl({
+										const response = await requestUrl({
 											url: this.UPLOAD_ENDPOINT,
 											method: "POST",
 											headers: {
@@ -217,7 +217,7 @@ export default class PublishModal extends Modal {
 							}
 						}
 
-						let result = await publish(this.nostrService, doc.content, this.file, summaryText.getValue(), featureImagePath, titleText.getValue(), articleTags);
+						const result = await publish(this.nostrService, doc.content, this.file, summaryText.getValue(), featureImagePath, titleText.getValue(), articleTags);
 
 						if (result) {
 							new Notice(`✅ Successfully published ${this.file.basename}`);
@@ -229,17 +229,15 @@ export default class PublishModal extends Modal {
 						}
 					})).setClass("publish-control-container");
 
-		async function publish(service: NostrService, content: string, file: TFile, summary: string, image: string, title: string, tags: string[]): Promise<Boolean> {
+		async function publish(service: NostrService, content: string, file: TFile, summary: string, image: string, title: string, tags: string[]): Promise<boolean> {
 			try {
-				let res = await service.publish(
+				return await service.publish(
 					content,
 					summary,
 					image,
 					title,
 					tags
 				);
-
-				return !!res;
 
 			} catch (error) {
 				throw new Error(`Failed to publish ${file.basename}`);
@@ -267,13 +265,13 @@ export default class PublishModal extends Modal {
 		function createBadge(name: string) {
 			if (name.trim() === "") return;
 			articleTags.push(name.trim());
-			let badge = createBadgeElement(name.trim());
+			const badge = createBadgeElement(name.trim());
 			badgesContainer.appendChild(badge);
 			badges.setValue("");
 		}
 
 		function getContentType(filename: string): string {
-			let extension = filename.split('.').pop()?.toLowerCase();
+			const extension = filename.split('.').pop()?.toLowerCase();
 			switch (extension) {
 				case 'jpg':
 				case 'jpeg':
@@ -317,7 +315,7 @@ export interface Extractor {
 export class ArticleExtractor implements Extractor {
 
 	private app: App;
-	protected frontMatterRegex: RegExp = /---\s*[\s\S]*?\s*---/g;
+	protected frontMatterRegex = /---\s*[\s\S]*?\s*---/g;
 
 	constructor(app: App) {
 		this.app = app;
@@ -329,8 +327,8 @@ export class ArticleExtractor implements Extractor {
 			throw new Error("No file provided");
 		}
 
-		let response = new Article()
-		let fileInfo = this.app.metadataCache.getFileCache(file)?.frontmatter;
+		const response = new Article()
+		const fileInfo = this.app.metadataCache.getFileCache(file)?.frontmatter;
 
 		if (fileInfo !== undefined) {
 			response.title = fileInfo.title || file.basename;
