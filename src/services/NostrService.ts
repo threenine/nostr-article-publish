@@ -1,11 +1,14 @@
 import NostrArticlePublishPlugin from "../../main";
 import {App} from "obsidian";
-import {NostrPublishConfiguration} from "../types";
-import {finalizeEvent, Relay,  VerifiedEvent} from "nostr-tools";
+import {NostrPublishConfiguration, RelayConnectionResult} from "../types";
+import {finalizeEvent, Relay, VerifiedEvent} from "nostr-tools";
 import {
 	DEFAULT_EXPLICIT_RELAY_URLS,
-	NOSTR_D_TAG, NOSTR_IMAGE_TAG, NOSTR_PUBLISHED_AT_TAG,
-	NOSTR_SUMMARY_TAG, NOSTR_TAGS_TAG,
+	NOSTR_D_TAG,
+	NOSTR_IMAGE_TAG,
+	NOSTR_PUBLISHED_AT_TAG,
+	NOSTR_SUMMARY_TAG,
+	NOSTR_TAGS_TAG,
 	NOSTR_TITLE_TAG,
 	toHex,
 	validateURL
@@ -41,7 +44,7 @@ export default class NostrService {
 			}
 		}
 		this.relaysConnect().then(result => {
-			console.log(`Connected to relays :${result} `)
+			console.log(`Connected to relays : ${result.success} , number of relays: ${result.count} `)
 		});
 	}
 
@@ -49,33 +52,39 @@ export default class NostrService {
 		return this.connected;
 	}
 
-	async relaysConnect(): Promise<void> {
+	async relaysConnect(): Promise<RelayConnectionResult> {
 		this.refreshRelayUrls();
 		this.connectedRelays = [];
 
-		const connectionPromises = [];
-		for (const url of this.relayURLs) {
-			connectionPromises.push(new Promise<Relay | null>( (resolve) => {
-				Relay.connect(url).then(relayAttempt => {
-					relayAttempt.onclose = () => {
-						this.connectedRelays.remove(relayAttempt);
-						resolve(null);
-					}
-					this.connectedRelays.push(relayAttempt);
-					resolve(relayAttempt);
-				}).catch(() => {
-					resolve(null);
-				});
-			}));
+		const connectionResults = await Promise.all(
+			this.relayURLs.map((url) => this.connectToRelay(url))
+		);
+
+		this.connectedRelays = connectionResults.filter((relay): relay is Relay => relay !== null);
+
+		if (this.connectedRelays.length > 0) {
+			this.setConnectionPool();
+			this.connected = true;
 		}
 
-		Promise.all(connectionPromises).then(() => {
-			if (this.connectedRelays.length > 0) {
-				this.setConnectionPool();
-				this.connected = true;
-			}
-		});
+		return {
+			success: this.connected,
+			count: this.connectedRelays.length
+		};
 	}
+
+	private async connectToRelay(url: string): Promise<Relay | null> {
+		try {
+			const relay = await Relay.connect(url);
+			relay.onclose = () => {
+				this.connectedRelays = this.connectedRelays.filter(r => r !== relay);
+			};
+			return relay;
+		} catch {
+			return null;
+		}
+	}
+
 
 	setConnectionPool = () => {
 		for (const relay of this.connectedRelays) {

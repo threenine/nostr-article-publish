@@ -7,4 +7,8 @@ export interface NostrPublishConfiguration {
 	enableStatusBar: boolean;
 }
 
+export interface RelayConnectionResult {
+	success: boolean;
+	count: number;
+}
 
