@@ -84,8 +84,6 @@ export default class NostrService {
 			return null;
 		}
 	}
-
-
 	setConnectionPool = () => {
 		for (const relay of this.connectedRelays) {
 			this.poolUrls.push(relay.url);

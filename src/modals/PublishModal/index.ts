@@ -31,8 +31,14 @@ export default class PublishModal extends Modal {
 			articleTags.push(tag);
 		}
 
-		contentEl.createEl("h2", {text: `Publish to Nostr`})
-			.addClass("publish-modal-title");
+		new Setting(contentEl)
+
+			.setDesc("To publish your article to nostr, ensure the following metadata is completed")
+			.setClass("publish-modal-title")
+			.setHeading().setName("Publish").setClass("publish-modal-title")
+		;
+
+
 
 		contentEl.createEl("p", {text: `Title`, cls: 'input-label'});
 		const titleText = new TextComponent(contentEl)
