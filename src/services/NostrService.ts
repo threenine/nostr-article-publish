@@ -14,10 +14,10 @@ import {v4 as uuidv4} from "uuid";
 
 
 export default class NostrService {
-	private privateKey: string;
+	private readonly privateKey: string;
 	private plugin: NostrArticlePublishPlugin;
 	private connected: boolean;
-	poolUrls: string[];
+	 poolUrls: string[];
 	private relayURLs: string[];
 	connectedRelays: Relay[];
 
@@ -30,7 +30,7 @@ export default class NostrService {
 		this.plugin = plugin;
 		this.privateKey = configuration.privateKey;
 		this.relayURLs = [];
-
+        this.poolUrls = [];
 		if (!configuration.relayURLs || configuration.relayURLs.length === 0) {
 			this.relayURLs = DEFAULT_EXPLICIT_RELAY_URLS;
 		} else {
@@ -53,21 +53,21 @@ export default class NostrService {
 		this.refreshRelayUrls();
 		this.connectedRelays = [];
 
-		const connectionPromises = this.relayURLs.map((url) => {
-			return new Promise<Relay | null>(async (resolve) => {
-				try {
-					const relayAttempt = await Relay.connect(url);
+		const connectionPromises = [];
+		for (const url of this.relayURLs) {
+			connectionPromises.push(new Promise<Relay | null>( (resolve) => {
+				Relay.connect(url).then(relayAttempt => {
 					relayAttempt.onclose = () => {
 						this.connectedRelays.remove(relayAttempt);
 						resolve(null);
 					}
 					this.connectedRelays.push(relayAttempt);
 					resolve(relayAttempt);
-				} catch (error) {
+				}).catch(() => {
 					resolve(null);
-				}
-			});
-		});
+				});
+			}));
+		}
 
 		Promise.all(connectionPromises).then(() => {
 			if (this.connectedRelays.length > 0) {
@@ -115,7 +115,7 @@ export default class NostrService {
 	): Promise<boolean> {
 
 		const uuid: string = uuidv4().substring(0, 8);
-		const noteTags: any = [[NOSTR_D_TAG, uuid]];
+		const noteTags: string[][] = [[NOSTR_D_TAG, uuid]];
 		noteTags.push([NOSTR_SUMMARY_TAG, summary]);
 		noteTags.push([NOSTR_TITLE_TAG, title]);
 		noteTags.push([NOSTR_IMAGE_TAG, image]);

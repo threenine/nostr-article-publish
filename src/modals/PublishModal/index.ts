@@ -56,8 +56,8 @@ export default class PublishModal extends Modal {
 		});
 		summaryText.inputEl.classList.add("publish-modal-input");
 
-		let featureImage: any | null = null;
-		let featureImagePath = "";
+		let featureImage: File | null = null;
+		let featureImagePath  = "";
 
 		new Setting(contentEl)
 			.setName("Feature Image")

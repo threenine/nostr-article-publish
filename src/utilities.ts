@@ -56,10 +56,3 @@ export function validateURL(url: string): boolean {
 
 
 
-export function setAttributes(element: any, attributes: any) {
-	for (const key in attributes) {
-		element.setAttribute(key, attributes[key]);
-	}
-}
-
-
