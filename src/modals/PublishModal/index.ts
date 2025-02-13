@@ -93,7 +93,7 @@ export default class PublishModal extends Modal {
 										imageNameDiv.textContent = input.files[0].name;
 
 									} catch (e) {
-										console.log(e)
+										console.log("Adding Feature Image failed",e);
 									}
 								}
 							});

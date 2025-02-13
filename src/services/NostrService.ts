@@ -24,7 +24,7 @@ export default class NostrService {
 	constructor(plugin: NostrArticlePublishPlugin, app: App, configuration: NostrPublishConfiguration) {
 
 		if (!configuration.privateKey) {
-			console.log("No private key set for Nostr Publish");
+			console.error("No private key set for Nostr Publish");
 			return;
 		}
 		this.plugin = plugin;
@@ -155,6 +155,7 @@ export default class NostrService {
 						return {success: false, url: relay.url};
 					}
 				} catch (error) {
+					console.error("An error occurred while publishing to relay", error);
 					return {success: false, url: relay.url};
 
 				}
@@ -164,16 +165,11 @@ export default class NostrService {
 				.filter((result) => result.success)
 				.map((result) => result.url);
 
-			console.log(
-				`Published to ${publishedRelays.length} / ${this.connectedRelays.length} relays.`
-			);
 			if (publishedRelays.length === 0) {
-				console.log("Didn't send to any relays");
 				return {success: false, publishedRelays: []};
 
 			} else {
-				console.log("Sent to relays");
-				return {success: true, publishedRelays};
+			  return {success: true, publishedRelays};
 			}
 
 		} catch (error) {

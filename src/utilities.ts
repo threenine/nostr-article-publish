@@ -30,7 +30,6 @@ export function toHex(value: string): string {
   return value;
 }
 
-
 export function toUint8Array(hex: string): Uint8Array {
 	if (hex.length % 2 !== 0) {
 		throw new Error("Invalid hex string");
