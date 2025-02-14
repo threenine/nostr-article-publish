@@ -1,6 +1,6 @@
 # Obstrlish
 
-An Obsidian plugin that enables the publishing of long form articles to the Nostr Protocol. 
+An Obsidian plugin that enables the publishing of long form articles (Kind 30023) to the Nostr Protocol. 
 
 Nostr is an open protocol with a rapidly expanding suite of tools, simplifying the integration of Nostr across various 
 corners of the Internet. 
