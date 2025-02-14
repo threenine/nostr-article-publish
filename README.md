@@ -42,4 +42,10 @@ The plugin can be installed from within Obsidian.
 
 ## 🛠️ Usage
 
+Once the plugin has been installed open your 
 ![img.png](images/Settings.png)
+
+
+## ✍️ Feedback and Contributions
+
+If you encounter any issues or have feedback on the plugin, feel free to open an issue on the [GitHub repository](https://github.com/threenine/obstrlish). 
