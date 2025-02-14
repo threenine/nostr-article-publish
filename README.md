@@ -28,5 +28,18 @@ structure your ideas for the better. Trying it for broader objectives will help 
 with constant alerts, notifications, and blinking extensions. Composing within Obsidian offers a tranquil, 
 clutter-free experience, fostering focus and productivity.
 
+## 🚀 Installation
+
+The plugin can be installed from within Obsidian.
+
+### Obsidian Community Plugin Browser
+
+- Go to `Settings` -> `Community plugins`
+- Make sure `Restricted mode` is **off**
+- Click `Browse`
+- Search for `obstrlish`
+- Click `Install` and then `Enable`
+
+## 🛠️ Usage
 
 ![img.png](images/Settings.png)
