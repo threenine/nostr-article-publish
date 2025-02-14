@@ -4,7 +4,7 @@
 	"version": "0.1.0",
 	"minAppVersion": "1.8.0",
 	"description": "Publish long form articles to the nostr protocol",
-	"author": "threenine",
+	"author": "threenine.co.uk",
 	"authorUrl": "https://threenine.co.uk",
 	"fundingUrl": {
 		"Buy Me a coffee" : "buymeacoffee.com/XBhTJcRiC",

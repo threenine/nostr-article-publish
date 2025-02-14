@@ -1,9 +1,9 @@
 import {Notice, Plugin} from 'obsidian';
-import {NostrPublishConfigurationTab} from './src/tabs/NostrPublishConfigurationTab';
+import {SettingsTab} from './src/tabs/SettingsTab';
 import {NostrPublishConfiguration} from './src/types';
 import NostrService from "./src/services/NostrService";
 import {DEFAULT_EXPLICIT_RELAY_URLS} from "./src/utilities";
-import PublishModal from "./src/modals/PublishModal";
+import Publish from "./src/modals/Publish";
 
 export default class NostrArticlePublishPlugin extends Plugin {
 	configuration: NostrPublishConfiguration
@@ -14,7 +14,7 @@ export default class NostrArticlePublishPlugin extends Plugin {
 		await this.loadConfiguration();
 		this.startService();
 		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new NostrPublishConfigurationTab(this.app, this));
+		this.addSettingTab(new SettingsTab(this.app, this));
 
 		this.addRibbonIcon('newspaper', 'Publish to Nostr', async (evt: MouseEvent) => {
 			console.log(`Publish to Nostr ${evt.doc.title}`);
@@ -25,7 +25,7 @@ export default class NostrArticlePublishPlugin extends Plugin {
 			const file = this.app.workspace.getActiveFile()
 			if (file) {
 				if (this.nostrService.Connected()) {
-					new PublishModal(this.app, this.nostrService, file, this).open()
+					new Publish(this.app, this.nostrService, file, this).open()
 				}
 			}
 		});

@@ -4,7 +4,7 @@ import NostrService from "../../services/NostrService";
 import * as path from "node:path";
 
 
-export default class PublishModal extends Modal {
+export default class Publish extends Modal {
 	plugin: NostrArticlePublishPlugin;
 	private readonly UPLOAD_ENDPOINT = "https://media.geekiam.systems/";
 

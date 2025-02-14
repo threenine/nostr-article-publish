@@ -2,7 +2,7 @@ import {App, ButtonComponent, Notice, PluginSettingTab, Setting, TextComponent} 
 import NostrArticlePublishPlugin from "../../main";
 import {validatePrivateKey, validateURL} from "../utilities";
 
-export class NostrPublishConfigurationTab extends PluginSettingTab {
+export class SettingsTab extends PluginSettingTab {
 	plugin: NostrArticlePublishPlugin;
 	private readonly refresh: () => void;
 	private relayUrlInput: TextComponent;
