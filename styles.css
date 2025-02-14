@@ -7,6 +7,10 @@
 	font-size: 12px;
 	font-weight: lighter;
 }
+.publish-text-input {
+	width: 100%;
+	margin-bottom: 5px;
+}
 .publish-title-container {
 	margin-bottom: 10px;
 	width: 100%;

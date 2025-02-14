@@ -37,12 +37,11 @@ export default class Publish extends Modal {
 			.setHeading().setName("Publish").setClass("publish-modal-title")
 		;
 
-
-
 		contentEl.createEl("p", {text: `Title`, cls: 'input-label'});
 		const titleText = new TextComponent(contentEl)
 			.setPlaceholder(`${doc.title}`)
-			.setValue(`${doc.title}`);
+			.setValue(`${doc.title}`)
+		;
 
 		titleText.inputEl.setCssStyles({
 			width: "100%",
