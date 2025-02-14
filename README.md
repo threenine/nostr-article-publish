@@ -44,16 +44,20 @@ The plugin can be installed from within Obsidian.
 
 Once the plugin has been installed open your vault settings and navigate to the Obstrlish settings
 
-![img.png](images/Settings.png)
+![Settings Tab](images/Settings.png)
 
 Paste your private key (`nsec`) into the corresponding field, Your private key is stored exclusively on your local 
 device and never leaves it. Even if you use Obsidian sync to keep your notes updated across multiple devices, all 
 information is locally encrypted and safeguarded by the password of your choice. Neither the Obsidian developers 
 nor the plugin developer have access to your `data.json`.
 
+### Relay Configuration
 By the default the plugin is automatically configured to connect to a number of popular relays to enable publishing However,
 you can also update the plugin to use any of your preferred relays
 
+To configure your relays Toggle
+
+![Relay Configuration](images/relay-configuration.png)
 
 
 ## ✍️ Feedback and Contributions
