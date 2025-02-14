@@ -64,6 +64,9 @@ To configure your relays Toggle
 
 ![Publish Articles](images/publish.png)
 
+
+![Publish](images/publishing.png)
+
 ## ✍️ Feedback and Contributions
 
 If you encounter any issues or have feedback on the plugin, feel free to open an issue on the [GitHub repository](https://github.com/threenine/obstrlish). 
