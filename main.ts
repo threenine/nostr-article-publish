@@ -8,7 +8,6 @@ import Publish from "./src/modals/Publish";
 export default class NostrArticlePublishPlugin extends Plugin {
 	configuration: NostrPublishConfiguration
 	nostrService: NostrService;
-	statusBar: any;
 
 	async onload() {
 		await this.loadConfiguration();
@@ -17,9 +16,8 @@ export default class NostrArticlePublishPlugin extends Plugin {
 		this.addSettingTab(new SettingsTab(this.app, this));
 
 		this.addRibbonIcon('newspaper', 'Publish to Nostr', async (evt: MouseEvent) => {
-			console.log(`Publish to Nostr ${evt.doc.title}`);
 			if (!this.configuration.privateKey) {
-				new Notice('No private key set for Nostr Article Publish');
+				new Notice(`No private key set for Nostr Article Publish cannot publish ${evt.doc.title}`);
 			}
 
 			const file = this.app.workspace.getActiveFile()

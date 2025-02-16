@@ -26,10 +26,11 @@ export default class Publish extends Modal {
 		const extractor = new ArticleExtractor(this.app)
 
 		const doc = await extractor.extract(this.file);
-
-		for (const tag of doc.tags) {
-			articleTags.push(tag);
-		}
+       if(doc.tags !== undefined) {
+		   for (const tag of doc.tags) {
+			   articleTags.push(tag);
+		   }
+       }
 
 		new Setting(contentEl)
 			.setDesc("To publish your article to nostr, ensure the following metadata is completed")
@@ -40,24 +41,18 @@ export default class Publish extends Modal {
 		contentEl.createEl("p", {text: `Title`, cls: 'input-label'});
 		const titleText = new TextComponent(contentEl)
 			.setPlaceholder(`${doc.title}`)
-			.setValue(`${doc.title}`)
+			.setValue(`${doc.title || this.file.basename}`)
 		;
+        titleText.inputEl.classList.add("text-box");
 
-		titleText.inputEl.setCssStyles({
-			width: "100%",
-			marginBottom: "5px",
-		});
 
 		contentEl.createEl("p", {text: `Summary`, cls: 'input-label'});
 		const summaryText = new TextAreaComponent(contentEl)
 			.setPlaceholder("A brief summary of the article")
 			.setValue(doc.summary);
 
-		summaryText.inputEl.setCssStyles({
-			width: "100%",
-			height: "100px",
-			marginBottom: "10px",
-		});
+		summaryText.inputEl.classList.add("multiline-text-box");
+
 		summaryText.inputEl.classList.add("publish-modal-input");
 
 		let featureImage: File | null = null;
@@ -106,26 +101,15 @@ export default class Publish extends Modal {
 			);
 
 		const imagePreview = contentEl.createEl("img");
-		imagePreview.setCssStyles({
-			maxWidth: "100%",
-			display: "none",
-		});
+		imagePreview.addClass("image-preview");
+
 
 		const imageNameDiv = contentEl.createEl("div");
-		imageNameDiv.setCssStyles({
-			display: "none",
-		});
+
 
 		const clearImageButton = contentEl.createEl("div");
-		clearImageButton.setCssStyles({
-			display: "none",
-			background: "none",
-			border: "none",
-			cursor: "pointer",
-			fontSize: "14px",
-			color: "red",
-			marginTop: "10px",
-		});
+		clearImageButton.addClass("clear-image-button");
+
 
 		clearImageButton.textContent = "❌ Remove";
 
@@ -151,11 +135,8 @@ export default class Publish extends Modal {
 				createBadge(badges.getValue());
 			}
 		});
+       badges.inputEl.addClass("badge-box");
 
-		badges.inputEl.setCssStyles({
-			width: "100%",
-			marginBottom: "10px",
-		});
 
 		const badgesContainer = contentEl.createEl("div");
 		badgesContainer.addClass("badge-container");
@@ -296,9 +277,6 @@ export default class Publish extends Modal {
 		}
 	}
 
-
-
-
 	onClose() {
 		const {contentEl} = this;
 		contentEl.empty();
@@ -334,10 +312,11 @@ export class ArticleExtractor implements Extractor {
 		const response = new Article()
 		const fileInfo = this.app.metadataCache.getFileCache(file)?.frontmatter;
 
+		console.log(fileInfo);
 		if (fileInfo !== undefined) {
 			response.title = fileInfo.title || file.basename;
 			response.summary = fileInfo.summary || "";
-			response.tags = fileInfo.tags;
+			response.tags = fileInfo.tags || [];
 		}
 		response.content = (await this.app.vault.read(file)).replace(this.frontMatterRegex, "").trim();
 

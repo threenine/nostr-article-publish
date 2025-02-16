@@ -21,7 +21,7 @@
 	margin-top: 20px;
 	width: 100%;
 }
-.input-label{
+.input-label {
 	font-weight: bold;
 	font-size: 12px;
 	margin-bottom: 2px;
@@ -30,6 +30,15 @@
 	outline: none;
 	padding: 5px;
 	background-color: transparent;
+}
+.text-box{
+	width: 100%;
+	margin-bottom: 5px;
+}
+.multiline-text-box{
+	width: 100%;
+	margin-bottom: 5px;
+	height: 100px;
 }
 .input-label-small{
 	font-weight: bold;
@@ -68,7 +77,10 @@
 	display: flex;
 	align-items: center;
 }
-
+.badge-box {
+	width: 100%;
+	margin-bottom: 10px;
+}
 .remove {
 	background-color: transparent;
 	color: black;
@@ -85,4 +97,16 @@
 	color: #ff0000;
 }
 
+.clear-image-button {
+	display: none;
+	background: none;
+	border: none;
+	cursor: pointer;
+	font-size: 14px;
+	color: red;
+	margin-top: 10px;
+}
 
+.image-preview {
+	max-width: 100%;
+}

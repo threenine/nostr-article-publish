@@ -1,7 +1,7 @@
 {
 	"id": "obstrlish",
 	"name": "Obstrlish",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"minAppVersion": "1.8.0",
 	"description": "Publish long form articles to the nostr protocol",
 	"author": "threenine.co.uk",

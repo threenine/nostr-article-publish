@@ -55,15 +55,17 @@ nor the plugin developer have access to your `data.json`.
 By the default the plugin is automatically configured to connect to a number of popular relays to enable publishing However,
 you can also update the plugin to use any of your preferred relays
 
-To configure your relays Toggle
+To configure your relays Toggle the relay configuration. This will reveal a panel, where you can edit and refresh the
+connections to the Relays.  You can add additional relays you would like to connect too.
 
 ![Relay Configuration](images/relay-configuration.png)
 
 
+
 ## 📰  Publish Articles
 
+To publish articles you can simply click the Newspaper Icon that will appear in your Ribbon Tray on 
 ![Publish Articles](images/publish.png)
-
 
 ![Publish](images/publishing.png)
 
