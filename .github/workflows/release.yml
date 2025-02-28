@@ -29,7 +29,11 @@ jobs:
               run: |
                   tag="${GITHUB_REF#refs/tags/}"
                   
-                  gh release create "$tag" \
-                    --title="$tag" \
-                    --draft \
-                    main.js manifest.json styles.css "obstrlish-${tag}.zip"
+                   # Create a compressed zip file named using the tag
+                    zip "obstrlish-${tag}.zip" main.js manifest.json styles.css
+                    
+                    
+                    gh release create "$tag" \
+                                    --title="$tag" \
+                                    --draft \
+                                    main.js manifest.json styles.css "obstrlish-${tag}.zip"
